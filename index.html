@@ -234,13 +234,13 @@
             <a class="nav-link text-dark" href="https://wsdalearning.ai/courses" target="_blank">Courses</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-dark" href="https://wsdalearning.ai/blog" target="_blank">Blog</a>
+            <a class="nav-link text-dark" href="https://wsdalearning.ai/wsda-news/" target="_blank">WSDA News</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-dark" href="https://wsdalearning.ai/about" target="_blank">About</a>
+            <a class="nav-link text-dark" href="https://wsdalearning.ai/for-organization" target="_blank">For Organizations</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-dark" href="https://wsdalearning.ai/contact" target="_blank">Contact</a>
+            <a class="nav-link text-dark" href="https://www.linkedin.com/learning/search?keywords=walter%20shields" target="_blank">LinkedIn</a>
           </li>
         </ul>
       </div>
@@ -511,7 +511,7 @@ async function reviewQuery() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer  API KEY HOLDER' // <-- Your API key
+                'Authorization': `Bearer ${OPENAI_API_KEY}`
             },
             body: JSON.stringify({
                 model: 'gpt-3.5-turbo',
