@@ -507,43 +507,45 @@ async function reviewQuery() {
     }
 
     try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${OPENAI_API_KEY}`
+        const response = await fetch('https://wsdalearning-sqleditor-proxy.walterashields.workers.dev/sqleditor/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({  
+        model: 'gpt-3.5-turbo',
+        messages: [
+            {
+                role: "system",
+                content: `
+                    You are a helpful SQL expert reviewing beginner SQL queries.
+                    You have access to the database schema provided.
+                    Your task:
+                    - Give helpful, encouraging feedback
+                    - Suggest small improvements or tips
+                    - If the query is correct, acknowledge it
+                    - KEEP FEEDBACK CLEAR, FRIENDLY, AND UNDER 200 WORDS
+                `
             },
-            body: JSON.stringify({
-                model: 'gpt-3.5-turbo',
-                messages: [
-                    {
-                        role: "system",
-                        content: `
-                            You are a helpful SQL expert reviewing beginner SQL queries.
-                            You have access to the database schema provided.
-                            Your task:
-                            - Give helpful, encouraging feedback
-                            - Suggest small improvements or tips
-                            - If the query is correct, acknowledge it
-                            - KEEP FEEDBACK CLEAR, FRIENDLY, AND UNDER 200 WORDS
-                        `
-                    },
-                    {
-                        role: "user",
-                        content: `
-                            Here is the database schema:
-                            ${schemaDescription}
+            {
+                role: "user",
+                content: `
+                    Here is the database schema:
+                    ${schemaDescription}
 
-                            Here is the SQL query to review:
-                            ${query}
+                    Here is the SQL query to review:
+                    ${query}
 
-                            Please provide helpful, concise feedback.
-                        `
-                    }
-                ],
-                temperature: 0.4
-            })
-        });
+                    Please provide helpful, concise feedback.
+                `
+            }
+        ],
+        temperature: 0.4,
+        stream: false   // ✅ Add this
+    })
+});
+
+
 
         const data = await response.json();
         const feedback = data.choices[0].message.content.trim();
