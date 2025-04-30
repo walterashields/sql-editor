@@ -19,7 +19,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/sql/sql.min.js"></script>
-    <link rel="icon" href="https://wsdalearning.ai/favicon.ico" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
 
     <style>
         body { 
@@ -245,13 +245,24 @@
             overflow-x: hidden !important;
         }
         }
+        .navbar {
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+            min-height: auto;
+        }
+        .navbar-brand img {
+            height: 42px;
+            max-height: 42px;
+        }
 </style>        
 </head>
 <body>
 <!-- Top Navigation Bar -->
 <nav class="navbar navbar-expand-lg navbar-light bg-white border border-light shadow-sm mb-3 rounded">
     <div class="container-fluid">
-      <a class="navbar-brand fw-bold text-success" href="https://wsdalearning.ai" target="_blank">WSDA Learning</a>
+        <a class="navbar-brand d-flex align-items-center" href="https://wsdalearning.ai" target="_blank">
+            <img src="wsda-logo.png" alt="WSDA Logo" style="height: 44px; width: auto; max-height: 100%;">
+        </a>
   
       <!-- Hamburger button for mobile -->
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
