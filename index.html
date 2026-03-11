@@ -369,7 +369,7 @@ let SQL;
 window.onload = async function() {
     SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}` });
 
-    const response = await fetch('PixelMetrics.db');
+    const response = await fetch('pixelmetrics.db');
     const buffer = await response.arrayBuffer();
     db = new SQL.Database(new Uint8Array(buffer));
     
@@ -651,7 +651,7 @@ function loadDigitalEvidenceDB() {
 
 function loadPixelMetricsDB() {
 
-    fetch('PixelMetrics.db')
+    fetch('pixelmetrics.db')
         .then(response => response.arrayBuffer())
         .then(buffer => {
 
