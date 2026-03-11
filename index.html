@@ -414,14 +414,20 @@ window.onload = async function() {
         viewportMargin: Infinity
     });
 
-        // Allow CodeMirror to resize when the wrapper is dragged
+    // Make CodeMirror match the resizable wrapper height
     const editorWrapper = document.getElementById("editorWrapper");
     
-    const resizeObserver = new ResizeObserver(() => {
+    function syncEditorSize() {
+        editor.setSize("100%", editorWrapper.clientHeight);
         editor.refresh();
+    }
+    
+    const resizeObserver = new ResizeObserver(() => {
+        syncEditorSize();
     });
-
+    
     resizeObserver.observe(editorWrapper);
+    syncEditorSize();
     
     refreshSchema();
     updateDatabaseButtons("pixel");
