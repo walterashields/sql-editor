@@ -649,6 +649,26 @@ function loadDigitalEvidenceDB() {
       });
 }
 
+function loadPixelMetricsDB() {
+
+    fetch('PixelMetrics.db')
+        .then(response => response.arrayBuffer())
+        .then(buffer => {
+
+            const Uints = new Uint8Array(buffer);
+            db = new SQL.Database(Uints);
+
+            document.getElementById("currentDatabase").innerText =
+                "PixelMetrics Database";
+
+            refreshSchema();
+
+            document.getElementById('resultArea').innerHTML =
+                '<em>PixelMetrics database loaded.</em>';
+
+            editor.setValue('');
+        });
+}
 </script> 
 </body>
 </html>
