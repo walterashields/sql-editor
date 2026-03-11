@@ -279,12 +279,12 @@
                 <div class="border rounded p-2 mb-2">
         
                     <div class="d-grid gap-2 mb-2">
-                        <button class="btn btn-outline-success btn-sm" onclick="loadDigitalEvidenceDB()">
-                            Load Digital Evidence Database
+                        <button id="digitalBtn" class="btn btn-outline-success btn-sm" onclick="loadDigitalEvidenceDB()">
+                        Load Digital Evidence Database
                         </button>
-        
-                        <button class="btn btn-success btn-sm" onclick="loadPixelMetricsDB()">
-                            Load PixelMetrics Database
+                        
+                        <button id="pixelBtn" class="btn btn-success btn-sm" onclick="loadPixelMetricsDB()">
+                        Load PixelMetrics Database
                         </button>
                     </div>
         
@@ -383,6 +383,7 @@ window.onload = async function() {
     });
 
     refreshSchema();
+    updateDatabaseButtons("pixel");
 };
 
 
@@ -636,7 +637,9 @@ function loadDigitalEvidenceDB() {
 
           const Uints = new Uint8Array(buffer);
           db = new SQL.Database(Uints);
-
+         
+          updateDatabaseButtons("digital");
+          
           document.getElementById("currentDatabase").innerText =
               "Digital Evidence Database";
 
@@ -657,6 +660,7 @@ function loadPixelMetricsDB() {
 
             const Uints = new Uint8Array(buffer);
             db = new SQL.Database(Uints);
+            updateDatabaseButtons("pixel");
 
             document.getElementById("currentDatabase").innerText =
                 "PixelMetrics Database";
@@ -668,6 +672,36 @@ function loadPixelMetricsDB() {
 
             editor.setValue('');
         });
+}
+
+function updateDatabaseButtons(activeDB) {
+
+    const digitalBtn = document.getElementById("digitalBtn");
+    const pixelBtn = document.getElementById("pixelBtn");
+
+    if (activeDB === "pixel") {
+
+        pixelBtn.classList.remove("btn-outline-success");
+        pixelBtn.classList.add("btn-success");
+        pixelBtn.innerText = "PixelMetrics Database Loaded";
+
+        digitalBtn.classList.remove("btn-success");
+        digitalBtn.classList.add("btn-outline-success");
+        digitalBtn.innerText = "Load Digital Evidence Database";
+
+    }
+
+    if (activeDB === "digital") {
+
+        digitalBtn.classList.remove("btn-outline-success");
+        digitalBtn.classList.add("btn-success");
+        digitalBtn.innerText = "Digital Evidence Database Loaded";
+
+        pixelBtn.classList.remove("btn-success");
+        pixelBtn.classList.add("btn-outline-success");
+        pixelBtn.innerText = "Load PixelMetrics Database";
+
+    }
 }
 </script> 
 </body>
