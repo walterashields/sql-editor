@@ -414,6 +414,15 @@ window.onload = async function() {
         viewportMargin: Infinity
     });
 
+        // Allow CodeMirror to resize when the wrapper is dragged
+    const editorWrapper = document.getElementById("editorWrapper");
+    
+    const resizeObserver = new ResizeObserver(() => {
+        editor.refresh();
+    });
+
+resizeObserver.observe(editorWrapper);
+    
     refreshSchema();
     updateDatabaseButtons("pixel");
 };
