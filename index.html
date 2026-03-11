@@ -256,47 +256,50 @@
         }
 
 
-        .launch-banner {
-            background: #f0fff4;
-            border: 1px solid #06c015;
-            border-radius: 8px;
-            padding: 0.9rem 1.25rem;
-            margin: 0 0 1rem 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
-            font-size: 0.95rem;
+        .launch-cta{
+            border:1px solid #06c015;
+            border-radius:8px;
+            padding:6px 14px;
+            font-size:0.9rem;
+            display:flex;
+            align-items:center;
+            gap:12px;
+            background:#f7fff9;
         }
         
-        .launch-banner a {
-            color: #06c015;
-            font-weight: 600;
-            text-decoration: none;
-            white-space: nowrap;
+        .launch-cta a{
+            color:#06c015;
+            font-weight:600;
+            text-decoration:none;
         }
         
-        .launch-banner a:hover {
-            text-decoration: underline;
-        }
-        
-        @media (max-width: 768px) {
-            .launch-banner {
-                flex-direction: column;
-                align-items: flex-start;
-            }
+        .launch-cta a:hover{
+            text-decoration:underline;
         }
         
 </style>        
 </head>
 <body>
 <!-- Top Navigation Bar (logo only, no links/menu) -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white border border-light shadow-sm mb-3 rounded">
-  <div class="container-fluid">
-    <div class="navbar-brand d-flex align-items-center m-0 p-0">
-      <img src="wsda-logo.png" alt="WSDA Logo" style="height: 44px; width: auto; max-height: 100%;">
+<nav class="navbar navbar-light bg-white border border-light shadow-sm mb-3 rounded px-3">
+
+  <div class="d-flex align-items-center justify-content-between w-100">
+
+    <!-- Logo -->
+    <div class="d-flex align-items-center">
+      <img src="wsda-logo.png" alt="WSDA Logo" style="height:44px;">
     </div>
+
+    <!-- Launch CTA -->
+    <div class="launch-cta">
+      <span>
+        Join the waitlist for <strong>The AI-Enabled Data Analyst</strong>
+      </span>
+      <a href="https://wsdalearning.ai" target="_blank">Learn More →</a>
+    </div>
+
   </div>
+
 </nav>
     
 <div class="launch-banner">
