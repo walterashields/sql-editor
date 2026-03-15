@@ -609,17 +609,29 @@ async function submitEmailGate() {
     submitBtn.textContent = 'Sending...';
 
     try {
-        // Klaviyo Subscribe API v3
+        // Klaviyo Subscribe API — correct payload structure
         const payload = {
             data: {
                 type: 'subscription',
                 attributes: {
-                    list_id: KLAVIYO_LIST_ID,
-                    email: email,
                     custom_source: 'WSDA SQL Editor',
-                    properties: {
-                        first_name: firstName,
-                        source: 'sql_editor_gate'
+                    profile: {
+                        data: {
+                            type: 'profile',
+                            attributes: {
+                                email: email,
+                                first_name: firstName,
+                                properties: {
+                                    source: 'sql_editor_gate'
+                                }
+                            }
+                        }
+                    },
+                    list: {
+                        data: {
+                            type: 'list',
+                            id: KLAVIYO_LIST_ID
+                        }
                     }
                 }
             }
@@ -629,7 +641,7 @@ async function submitEmailGate() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'revision': '2023-12-15'
+                'revision': '2024-02-15'
             },
             body: JSON.stringify(payload)
         });
