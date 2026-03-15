@@ -392,12 +392,12 @@
     <!-- Default state: form -->
     <div id="gateFormContent">
       <div class="gate-eyebrow">You're getting it 🎉</div>
-      <h2>Keep going — get the framework that makes SQL indispensable in the AI era.</h2>
+      <h2>Keep going - get the framework that makes SQL indispensable in the AI era.</h2>
       <p class="gate-sub">Enter your name and email to <strong>save your queries</strong> and get Walter's free guide: <strong>SQL in the AI Era — the Prompt → Validate → Communicate framework</strong> used by data professionals at real companies.</p>
 
       <div class="gate-benefit">
         <span class="benefit-icon">📋</span>
-        <span>The <strong>PVC Framework</strong> — the new standard for how data analysts work alongside AI without losing accuracy, trust, or their jobs.</span>
+        <span>The <strong>PVC Framework</strong> - the new standard for how data analysts work alongside AI without losing accuracy, trust, or their jobs.</span>
       </div>
 
       <div class="gate-form">
@@ -419,7 +419,7 @@
     <div class="gate-success" id="gateSuccessContent">
       <div class="success-icon">✅</div>
       <h3>You're in, welcome!</h3>
-      <p>Check your inbox — Walter's PVC Framework guide is on its way.<br>Keep querying. The editor is all yours.</p>
+      <p>Check your inbox - Walter's PVC Framework guide is on its way.<br>Keep querying. The editor is all yours.</p>
     </div>
 
   </div>
@@ -427,7 +427,7 @@
 
 <!-- ── SOFT NUDGE BANNER ── -->
 <div id="nudgeBanner">
-  <span>🎁 Get Walter's free <strong>PVC Framework guide</strong> — SQL in the AI era, in plain English.</span>
+  <span>🎁 Get Walter's free <strong>PVC Framework guide</strong> - SQL in the AI era, in plain English.</span>
   <button id="nudgeBannerBtn" onclick="reopenEmailGate()">Get the free guide</button>
   <button id="nudgeBannerClose" onclick="closeNudgeBanner()" title="Dismiss">✕</button>
 </div>
@@ -620,17 +620,12 @@ async function submitEmailGate() {
                             type: 'profile',
                             attributes: {
                                 email: email,
-                                first_name: firstName,
-                                subscriptions: {
-                                    email: {
-                                        marketing: {
-                                            consent: 'SUBSCRIBED'
-                                        }
-                                    }
-                                }
+                                first_name: firstName
                             }
                         }
-                    },
+                    }
+                },
+                relationships: {
                     list: {
                         data: {
                             type: 'list',
