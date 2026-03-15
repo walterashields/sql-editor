@@ -609,7 +609,7 @@ async function submitEmailGate() {
     submitBtn.textContent = 'Sending...';
 
     try {
-        // Klaviyo Subscribe API — correct payload structure
+        // Klaviyo Client Subscription API — official spec payload
         const payload = {
             data: {
                 type: 'subscription',
@@ -621,8 +621,12 @@ async function submitEmailGate() {
                             attributes: {
                                 email: email,
                                 first_name: firstName,
-                                properties: {
-                                    source: 'sql_editor_gate'
+                                subscriptions: {
+                                    email: {
+                                        marketing: {
+                                            consent: 'SUBSCRIBED'
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -641,7 +645,7 @@ async function submitEmailGate() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'revision': '2024-02-15'
+                'revision': '2024-10-15'
             },
             body: JSON.stringify(payload)
         });
