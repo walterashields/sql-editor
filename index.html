@@ -283,18 +283,6 @@
             background: #aaa;
             cursor: not-allowed;
         }
-        #emailGateModal .gate-skip {
-            text-align: center;
-            font-size: 0.82rem;
-            color: #999;
-            margin-top: 0.5rem;
-        }
-        #emailGateModal .gate-skip a {
-            color: #999;
-            text-decoration: underline;
-            cursor: pointer;
-        }
-        #emailGateModal .gate-skip a:hover { color: #555; }
         #emailGateModal .gate-privacy {
             font-size: 0.75rem;
             color: #bbb;
@@ -328,46 +316,8 @@
             display: none;
         }
 
-        /* ── SOFT NUDGE BANNER (shown after skip) ── */
-        #nudgeBanner {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #f7fff9;
-            border-top: 1px solid #b8eabc;
-            padding: 0.6rem 1.25rem;
-            z-index: 8888;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            font-size: 0.88rem;
-            color: #2a5c2e;
-        }
-        #nudgeBanner.active { display: flex; }
-        #nudgeBanner strong { color: #059e11; }
-        #nudgeBannerBtn {
-            background: #06c015;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 0.35rem 0.9rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-            font-family: 'Inter', sans-serif;
-        }
-        #nudgeBannerClose {
-            background: none;
-            border: none;
-            color: #aaa;
-            font-size: 1.1rem;
-            cursor: pointer;
-            padding: 0 4px;
-            line-height: 1;
-        }
+        /* ── QUERY COUNTER BAR ── */
+        #queryCounterBar strong { color: #059e11; }
     </style>
 </head>
 <body>
@@ -391,13 +341,13 @@
 
     <!-- Default state: form -->
     <div id="gateFormContent">
-      <div class="gate-eyebrow">You're getting it 🎉</div>
-      <h2>Keep going - get the framework that makes SQL indispensable in the AI era.</h2>
-      <p class="gate-sub">Enter your name and email to <strong>save your queries</strong> and get Walter's free guide: <strong>SQL in the AI Era — the Prompt → Validate → Communicate framework</strong> used by data professionals at real companies.</p>
+      <div class="gate-eyebrow">Welcome, SQL learner 👋</div>
+      <h2>You've been learning with Walter. Now save your progress.</h2>
+      <p class="gate-sub">Enter your name and email to <strong>save your queries and continue practicing</strong>. You'll also get Walter's free guide: <strong>SQL in the AI Era — the Prompt → Validate → Communicate framework</strong> that shows exactly where SQL skills matter most alongside AI.</p>
 
       <div class="gate-benefit">
         <span class="benefit-icon">📋</span>
-        <span>The <strong>PVC Framework</strong> - the new standard for how data analysts work alongside AI without losing accuracy, trust, or their jobs.</span>
+        <span>The <strong>PVC Framework</strong> — the new standard for how data analysts work with AI without losing accuracy, trust, or their value to an organization.</span>
       </div>
 
       <div class="gate-form">
@@ -405,31 +355,26 @@
         <input type="email" id="gateEmail" placeholder="Work or personal email" autocomplete="email">
         <div id="gateError">Please enter a valid name and email address.</div>
         <button class="gate-submit" id="gateSubmitBtn" onclick="submitEmailGate()">
-          Send me the PVC Framework →
+          Save my progress and continue →
         </button>
       </div>
 
-      <div class="gate-skip">
-        <a onclick="skipEmailGate()">No thanks, I'll skip the free guide</a>
-      </div>
-      <div class="gate-privacy">No spam. Unsubscribe anytime. Walter reads every reply.</div>
+      <div class="gate-privacy">No spam. This is how Walter stays in touch with learners. Unsubscribe anytime.</div>
     </div>
 
     <!-- Success state -->
     <div class="gate-success" id="gateSuccessContent">
       <div class="success-icon">✅</div>
       <h3>You're in, welcome!</h3>
-      <p>Check your inbox - Walter's PVC Framework guide is on its way.<br>Keep querying. The editor is all yours.</p>
+      <p>Walter's PVC Framework guide is on its way to your inbox.<br>Keep querying — the editor is all yours.</p>
     </div>
 
   </div>
 </div>
 
-<!-- ── SOFT NUDGE BANNER ── -->
-<div id="nudgeBanner">
-  <span>🎁 Get Walter's free <strong>PVC Framework guide</strong> - SQL in the AI era, in plain English.</span>
-  <button id="nudgeBannerBtn" onclick="reopenEmailGate()">Get the free guide</button>
-  <button id="nudgeBannerClose" onclick="closeNudgeBanner()" title="Dismiss">✕</button>
+<!-- ── QUERY COUNTER BAR ── -->
+<div id="queryCounterBar" style="display:none; position:fixed; bottom:0; left:0; right:0; background:#f7fff9; border-top:1px solid #b8eabc; padding:0.5rem 1.25rem; z-index:8888; align-items:center; justify-content:space-between; gap:12px; font-size:0.88rem; color:#2a5c2e;">
+  <span id="queryCounterText">You have <strong id="queriesLeft">2</strong> free queries remaining. Save your progress to keep going.</span>
 </div>
 
 <div class="container-fluid">
@@ -506,8 +451,8 @@
 // ─────────────────────────────────────────────
 // CONFIGURATION — replace before deploying
 // ─────────────────────────────────────────────
-const KLAVIYO_PUBLIC_KEY = 'Xq8cpH';
-const KLAVIYO_LIST_ID    = 'RxbHkP';
+const KLAVIYO_PUBLIC_KEY = 'YOUR_KLAVIYO_PUBLIC_KEY';  // e.g. 'Ab1Cd2'
+const KLAVIYO_LIST_ID    = 'YOUR_KLAVIYO_LIST_ID';     // e.g. 'XyZ123'
 // ─────────────────────────────────────────────
 
 let db;
@@ -551,9 +496,7 @@ window.onload = async function() {
 // ─────────────────────────────────────────────
 
 function shouldShowGate() {
-    // Don't show if already captured or skipped this session
     if (localStorage.getItem('wsda_email_captured') === 'true') return false;
-    if (sessionStorage.getItem('wsda_gate_skipped') === 'true') return false;
     if (gateShown) return false;
     return true;
 }
@@ -561,6 +504,7 @@ function shouldShowGate() {
 function showEmailGate() {
     if (!shouldShowGate()) return;
     gateShown = true;
+    document.getElementById('queryCounterBar').style.display = 'none';
     document.getElementById('emailGateOverlay').classList.add('active');
     setTimeout(() => {
         document.getElementById('gateFirstName').focus();
@@ -568,28 +512,21 @@ function showEmailGate() {
 }
 
 function reopenEmailGate() {
-    document.getElementById('nudgeBanner').classList.remove('active');
     document.getElementById('gateFormContent').style.display = 'block';
     document.getElementById('gateSuccessContent').style.display = 'none';
     document.getElementById('emailGateOverlay').classList.add('active');
     setTimeout(() => { document.getElementById('gateFirstName').focus(); }, 300);
 }
 
-function skipEmailGate() {
-    sessionStorage.setItem('wsda_gate_skipped', 'true');
-    document.getElementById('emailGateOverlay').classList.remove('active');
-    // Show soft nudge banner instead
-    document.getElementById('nudgeBanner').classList.add('active');
+function updateQueryCounter() {
+    if (localStorage.getItem('wsda_email_captured') === 'true') return;
+    const remaining = Math.max(0, 3 - queryRunCount);
+    if (queryRunCount > 0 && queryRunCount < 3) {
+        const bar = document.getElementById('queryCounterBar');
+        bar.style.display = 'flex';
+        document.getElementById('queriesLeft').textContent = remaining;
+    }
 }
-
-function closeNudgeBanner() {
-    document.getElementById('nudgeBanner').classList.remove('active');
-}
-
-// Close modal if user clicks the dark overlay directly
-document.getElementById('emailGateOverlay').addEventListener('click', function(e) {
-    if (e.target === this) { skipEmailGate(); }
-});
 
 async function submitEmailGate() {
     const firstName = document.getElementById('gateFirstName').value.trim();
@@ -698,10 +635,11 @@ function runQuery() {
     }
     refreshSchema();
 
-    // Trigger gate after first successful query run
+    // Trigger gate after 3 query runs
     queryRunCount++;
-    if (queryRunCount === 1) {
-        setTimeout(showEmailGate, 800); // brief delay so they see their results first
+    updateQueryCounter();
+    if (queryRunCount === 3) {
+        setTimeout(showEmailGate, 800);
     }
 }
 
