@@ -343,11 +343,11 @@
     <div id="gateFormContent">
       <div class="gate-eyebrow">Welcome, SQL learner 👋</div>
       <h2>You've been learning with Walter. Now save your progress.</h2>
-      <p class="gate-sub">Enter your name and email to <strong>save your queries and continue practicing</strong>. You'll also get Walter's free guide: <strong>SQL in the AI Era — the Prompt → Validate → Communicate framework</strong> that shows exactly where SQL skills matter most alongside AI.</p>
+      <p class="gate-sub">Enter your name and email to <strong>save your queries and continue practicing</strong>. You'll also get early access to <strong>PVC Practitioner</strong> — Walter's new tool for data professionals working alongside AI.</p>
 
       <div class="gate-benefit">
-        <span class="benefit-icon">📋</span>
-        <span>The <strong>PVC Framework</strong> — the new standard for how data analysts work with AI without losing accuracy, trust, or their value to an organization.</span>
+        <span class="benefit-icon">🚀</span>
+        <span>The <strong>PVC Framework</strong> — Prompt, Validate, Communicate. The new standard for how data analysts work with AI without losing accuracy, trust, or their value to an organization.</span>
       </div>
 
       <div class="gate-form">
@@ -365,8 +365,8 @@
     <!-- Success state -->
     <div class="gate-success" id="gateSuccessContent">
       <div class="success-icon">✅</div>
-      <h3>You're in, welcome!</h3>
-      <p>Walter's PVC Framework guide is on its way to your inbox.<br>Keep querying — the editor is all yours.</p>
+      <h3>You're in!</h3>
+      <p>Your progress is saved. Keep querying — the editor is all yours.</p>
     </div>
 
   </div>
@@ -451,8 +451,8 @@
 // ─────────────────────────────────────────────
 // CONFIGURATION — replace before deploying
 // ─────────────────────────────────────────────
-const KLAVIYO_PUBLIC_KEY = 'YOUR_KLAVIYO_PUBLIC_KEY';  // e.g. 'Ab1Cd2'
-const KLAVIYO_LIST_ID    = 'YOUR_KLAVIYO_LIST_ID';     // e.g. 'XyZ123'
+const KLAVIYO_PUBLIC_KEY = 'Xq8cpH';
+const KLAVIYO_LIST_ID    = 'RxbHkP';
 // ─────────────────────────────────────────────
 
 let db;
@@ -604,15 +604,14 @@ function showGateSuccess(firstName) {
     const successEl = document.getElementById('gateSuccessContent');
     successEl.style.display = 'block';
 
-    // Update success message with first name if available
     if (firstName) {
-        successEl.querySelector('h3').textContent = `You're in, ${firstName}! 👋`;
+        successEl.querySelector('h3').textContent = `You're in, ${firstName}!`;
     }
 
-    // Auto-close after 3 seconds
+    // Close modal after 2.5 seconds — return them to the editor
     setTimeout(() => {
         document.getElementById('emailGateOverlay').classList.remove('active');
-    }, 3000);
+    }, 2500);
 }
 
 
