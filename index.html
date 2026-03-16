@@ -342,8 +342,8 @@
     <!-- Default state: form -->
     <div id="gateFormContent">
       <div class="gate-eyebrow">Welcome, SQL learner 👋</div>
-      <h2>You've been learning with Walter. Now save your progress.</h2>
-      <p class="gate-sub">Enter your name and email to <strong>save your queries and continue practicing</strong>. You'll also get early access to <strong>PVC Practitioner</strong> — Walter's new tool for data professionals working alongside AI.</p>
+      <h2>You've been learning with Walter. Keep the conversation going.</h2>
+      <p class="gate-sub">Enter your name and email to <strong>stay connected with Walter</strong> and get early access to <strong>PVC Practitioner</strong> — his new tool for data professionals working alongside AI.</p>
 
       <div class="gate-benefit">
         <span class="benefit-icon">🚀</span>
@@ -355,7 +355,7 @@
         <input type="email" id="gateEmail" placeholder="Work or personal email" autocomplete="email">
         <div id="gateError">Please enter a valid name and email address.</div>
         <button class="gate-submit" id="gateSubmitBtn" onclick="submitEmailGate()">
-          Save my progress and continue →
+          Join Walter's learner community →
         </button>
       </div>
 
@@ -415,9 +415,11 @@
                 <div class="d-flex flex-wrap gap-2 mt-2">
                     <button class="btn btn-success" onclick="runQuery()">Run Query</button>
                     <button class="btn btn-outline-success" onclick="reviewQuery()">Review My Query</button>
+                    <button class="btn btn-outline-success" onclick="exportQuery()">Export Query</button>
+                    <button class="btn btn-outline-success" onclick="exportResults()">Export Results</button>
                     <input type="file" id="dbUpload" accept=".sqlite,.db" onchange="loadDatabase(event)" class="form-control form-control-sm" style="width: auto;">
                 </div>
-                <div id="resultArea" class="border mt-3 p-2"></div>
+                <div id="resultArea" class="border mt-3 p-2" style="overflow-x: auto; max-height: 300px; overflow-y: auto;"></div>
             </div>
         </div>
 
@@ -433,13 +435,46 @@
     </div>
 
     <div class="container mt-5 rounded">
-        <div class="p-4 bg-white rounded shadow-sm text-center">
-            <h6 class="text-success fw-bold mb-2">About This Tool</h6>
-            <p class="small text-muted mb-0">
-                The WSDA SQL Editor is your free, AI-enhanced platform for practicing SQL skills.
-                Load your own database, write queries, and get guided feedback powered by Walter AI.
-                Built proudly by WSDA Learning to support aspiring data professionals worldwide.
+        <div class="p-4 bg-white rounded shadow-sm">
+            <h6 class="text-success fw-bold mb-3 text-center">About This Tool</h6>
+            <p class="small text-muted text-center mb-4">
+                The WSDA SQL Editor is your free, AI-enhanced platform for practicing SQL skills alongside Walter Shields —
+                author of <a href="https://www.linkedin.com/learning-login/share?account&forceAccount=false&redirect=https%3A%2F%2Fwww.linkedin.com%2Flearning%2Fdata-analysis-investigate-with-sql%3Ftrk%3Dshare_ent_url%26shareId%3D%252BPJJepJwTSmPHdGGfirbuA%253D%253D" target="_blank" class="text-success fw-semibold">Data Analysis: Investigate with SQL</a> on LinkedIn Learning.
             </p>
+
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-md-4">
+                    <div class="border border-success rounded p-3 h-100" style="border-color: #d0f0d4 !important;">
+                        <div class="fw-semibold text-success mb-1">🗄️ Practice Databases</div>
+                        <p class="small text-muted mb-0">Load the <strong>PixelMetrics</strong> database used in Walter's LinkedIn Learning course, or the <strong>Digital Evidence</strong> database for forensic SQL practice. Upload your own <code>.db</code> file too.</p>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="border rounded p-3 h-100" style="border-color: #d0f0d4 !important;">
+                        <div class="fw-semibold text-success mb-1">🤖 Walter AI Feedback</div>
+                        <p class="small text-muted mb-0">Write a query and click <strong>Review My Query</strong> to get real-time, encouraging feedback from Walter AI — covering correctness, style, and improvement tips.</p>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="border rounded p-3 h-100" style="border-color: #d0f0d4 !important;">
+                        <div class="fw-semibold text-success mb-1">📤 Export Your Work</div>
+                        <p class="small text-muted mb-0">Export your SQL query as a <code>.sql</code> file or download your results as a <code>.csv</code> file. Build a portfolio of your SQL work as you learn.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border rounded p-3" style="border-color: #d0f0d4 !important; background: #f7fff9;">
+                <div class="d-flex align-items-start gap-3 flex-wrap">
+                    <div class="flex-grow-1">
+                        <div class="fw-semibold text-success mb-1">🚀 Ready to take SQL further in the AI era?</div>
+                        <p class="small text-muted mb-0">
+                            <strong>PVC Practitioner</strong> is Walter's new professional tool — connect your own database, validate AI-generated queries, and communicate findings to stakeholders.
+                            The new standard for data analysts working alongside AI.
+                        </p>
+                    </div>
+                    <a href="https://pvc.wsdalearning.ai" target="_blank" class="btn btn-success btn-sm align-self-center" style="white-space:nowrap;">Try PVC Practitioner →</a>
+                </div>
+            </div>
         </div>
     </div>
     <footer class="text-center text-muted small mt-4 mb-2">
@@ -458,8 +493,8 @@ const KLAVIYO_LIST_ID    = 'RxbHkP';
 let db;
 let editor;
 let SQL;
-let queryRunCount = 0;          // tracks how many queries have been run
-let gateShown = false;          // prevents modal showing twice in same session
+let queryRunCount = parseInt(sessionStorage.getItem('wsda_query_count') || '0');
+let gateShown = false;
 
 window.onload = async function() {
     SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}` });
@@ -488,6 +523,11 @@ window.onload = async function() {
 
     refreshSchema();
     updateDatabaseButtons("pixel");
+
+    // Show gate on load if session count already reached 3
+    if (queryRunCount >= 3 && shouldShowGate()) {
+        setTimeout(showEmailGate, 500);
+    }
 };
 
 
@@ -636,6 +676,7 @@ function runQuery() {
 
     // Trigger gate after 3 query runs
     queryRunCount++;
+    sessionStorage.setItem('wsda_query_count', queryRunCount);
     updateQueryCounter();
     if (queryRunCount === 3) {
         setTimeout(showEmailGate, 800);
@@ -675,7 +716,44 @@ function loadDatabase(event) {
     reader.readAsArrayBuffer(file);
 }
 
-function saveDatabase() {
+function exportQuery() {
+    const query = editor.getValue().trim();
+    if (!query) {
+        alert('No query to export. Write a query first.');
+        return;
+    }
+    const blob = new Blob([query], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'query.sql';
+    a.click();
+}
+
+function exportResults() {
+    const resultArea = document.getElementById('resultArea');
+    const table = resultArea.querySelector('table');
+    if (!table) {
+        alert('No results to export. Run a query first.');
+        return;
+    }
+
+    let csv = '';
+    const rows = table.querySelectorAll('tr');
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('th, td');
+        const rowData = Array.from(cells).map(cell => {
+            const text = cell.textContent.replace(/"/g, '""');
+            return `"${text}"`;
+        });
+        csv += rowData.join(',') + '\n';
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'results.csv';
+    a.click();
+}
     const data = db.export();
     const blob = new Blob([data], { type: 'application/octet-stream' });
     const a = document.createElement('a');
