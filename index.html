@@ -754,6 +754,8 @@ function exportResults() {
     a.download = 'results.csv';
     a.click();
 }
+
+function saveDatabase() {
     const data = db.export();
     const blob = new Blob([data], { type: 'application/octet-stream' });
     const a = document.createElement('a');
