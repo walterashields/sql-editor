@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    
-    <meta name="description" content="Practice SQL queries with live AI feedback! Load your own database, write queries, and improve your SQL skills. Powered by WSDA Learning.">
+    <meta name="description" content="Practice SQL queries with live AI feedback. Load your own database, write queries, and improve your SQL skills. Powered by WSDA Learning.">
     <meta property="og:title" content="WSDA SQL Practice Editor">
     <meta property="og:description" content="Free SQL editor with AI-powered query feedback. Load your database and practice today. Built by WSDA Learning.">
     <meta property="og:image" content="https://wsdalearning.ai/assets/wsda-banner.png">
-    <meta property="og:url" content="https://wsdalearning.ai/sqleditor">
+    <meta property="og:url" content="https://sqleditor.wsdalearning.ai">
     <meta name="twitter:card" content="summary_large_image">
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WSDA SQL Practice Editor | AI-Powered Learning</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <title>WSDA SQL Editor | AI-Powered SQL Practice</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
@@ -21,523 +20,799 @@
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
 
     <style>
-        body { 
-            padding: 1rem;
-            font-family: 'Inter', sans-serif;
-            background-color: #f5f7fa;
-            color: #333;
+        /* ─── DESIGN TOKENS ─── */
+        :root {
+            --navy:       #0f1923;
+            --navy-mid:   #16232f;
+            --navy-card:  #1c2e3d;
+            --navy-edge:  #243547;
+            --green:      #06c015;
+            --green-dim:  rgba(6,192,21,0.12);
+            --green-glow: rgba(6,192,21,0.25);
+            --border:     rgba(255,255,255,0.07);
+            --border-md:  rgba(255,255,255,0.12);
+            --text-pri:   #f0f4f8;
+            --text-sec:   #8a9bb0;
+            --text-dim:   #4e6070;
+            --sans:       'DM Sans', system-ui, sans-serif;
+            --mono:       'DM Mono', 'Fira Code', monospace;
         }
-        .container-fluid { padding-top: 1rem; }
-        .section-box {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-            margin-bottom: 1.5rem;
-        }
-        h5 { margin-bottom: 1rem; font-weight: 600; }
-        #editor {
-            height: 300px;
-            width: 100%;
-            font-size: 0.95rem;
-            border: 1px solid #06c015;
-            border-radius: 8px;
-            padding: 10px;
-            background-color: #fcfcfc;
-            resize: vertical;
-            box-sizing: border-box;
-        }
-        .btn { margin-bottom: 5px; }
-        #resultArea { 
-            max-height: 300px; 
-            overflow-y: auto; 
-            margin-top: 1rem; 
-        }
-        #feedbackPanel {
-            min-height: 150px;
-            background: #eef7ee;
-            padding: 1.25rem;
-            margin-top: 1rem;
-            border-radius: 8px;
-            font-size: 1rem;
-            line-height: 1.5;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            border: none;
-            color: #333;
-        }
-        #schemaSidebar {
-            max-height: 70vh;
-            overflow-y: auto;
-            background: #ffffff;
-            padding: 1rem;
-            border-radius: 5px;
-            border: 1px solid #e0e0e0;
-        }
-        .section {
-            background: #ffffff;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 1rem 1.25rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-        }
-        .editor-header {
-            background-color: #06c015;
-            padding: 1rem;
-            border-radius: 8px;
-        }
-        .form-check-input:checked {
-            background-color: #06c015;
-            border-color: #06c015;
-        }
-        .btn {
-            border-radius: 6px;
-            font-weight: 500;
-            font-size: 0.95rem;
-            padding: 0.45rem 1rem;
-            transition: all 0.2s ease-in-out;
-        }
-        .btn-success {
-            background-color: #06c015;
-            border: 1px solid #06c015;
-            color: white;
-        }
-        .btn-success:hover {
-            background-color: #059e11;
-            border-color: #059e11;
-        }
-        .btn-outline-success {
-            border: 1px solid #06c015;
-            color: #06c015;
-            background-color: white;
-        }
-        .btn-outline-success:hover {
-            background-color: #06c015;
-            color: white;
-        }
-        .btn-primary {
-            background-color: #006aff;
-            border: none;
-        }
-        .btn-primary:hover { background-color: #0052cc; }
-        .table-entry { margin-bottom: 0.75rem; font-size: 0.95rem; }
-        .caret-icon { cursor: pointer; margin-right: 5px; user-select: none; }
-        .table-name { font-weight: 500; color: #333; }
-        .column-list { padding-left: 20px; margin-top: 0.5rem; }
-        .column-item { font-size: 0.85rem; color: #666; padding: 2px 0; }
-        .col-type { color: #999; font-style: italic; }
-        .table-toggle { cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        #editorWrapper {
-            resize: vertical;
-            overflow: auto;
-            min-height: 100px;
-            width: 100%;
-            border: 1px solid #06c015;
-            border-radius: 8px;
-            padding: 0;
-            background-color: #fcfcfc;
-            box-sizing: border-box;
-        }
-        #editor {
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
             height: 100%;
-            width: 100%;
-            border: none;
-            font-size: 0.95rem;
-            padding: 10px;
-            background: transparent;
+            background: var(--navy);
+            color: var(--text-pri);
+            font-family: var(--sans);
+            font-size: 14px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
-        .editor-header h5 { font-size: 1.1rem; }
-        p.small { font-size: 0.95rem; }
-        .row { flex-wrap: nowrap; overflow-x: auto; }
-        @media (max-width: 768px) {
-            #editorWrapper { min-height: 200px; }
-            .CodeMirror { font-size: 0.85rem; }
-        }
-        #resultArea table { display: block; overflow-x: auto; white-space: nowrap; }
-        body, html { overflow-x: hidden; }
-        .container-fluid { padding-left: 1rem; padding-right: 1rem; }
-        @media (max-width: 768px) {
-            .row { flex-wrap: wrap !important; overflow-x: hidden !important; }
-        }
-        .navbar { padding-top: 0.25rem; padding-bottom: 0.25rem; min-height: auto; }
-        .navbar-brand img { height: 42px; max-height: 42px; }
-        .launch-cta {
-            border: 1px solid #06c015;
-            border-radius: 8px;
-            padding: 6px 14px;
-            font-size: 0.9rem;
+
+        /* ─── NAV ─── */
+        .nav {
             display: flex;
             align-items: center;
-            gap: 12px;
-            background: #f7fff9;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            height: 56px;
+            background: var(--navy);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-        .launch-cta a { color: #06c015; font-weight: 600; text-decoration: none; }
-        .launch-cta a:hover { text-decoration: underline; }
+        .nav-logo img { height: 38px; display: block; }
+        .nav-cta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--navy-card);
+            border: 1px solid var(--border-md);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 12.5px;
+            color: var(--text-sec);
+        }
+        .nav-cta strong { color: var(--text-pri); font-weight: 600; }
+        .nav-cta a {
+            color: var(--green);
+            font-weight: 600;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .nav-cta a:hover { text-decoration: underline; }
 
-        /* ── EMAIL GATE MODAL ── */
+        /* ─── LAYOUT ─── */
+        .app-shell {
+            display: grid;
+            grid-template-columns: 240px 1fr 280px;
+            gap: 0;
+            height: calc(100vh - 56px);
+            overflow: hidden;
+        }
+
+        /* ─── SIDEBAR ─── */
+        .sidebar {
+            background: var(--navy-mid);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .sidebar-section {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .sidebar-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 0.65rem;
+        }
+        .db-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: var(--navy-card);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 8px 12px;
+            color: var(--text-sec);
+            font-family: var(--sans);
+            font-size: 12.5px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 6px;
+            transition: all 0.15s;
+        }
+        .db-btn:hover { border-color: var(--border-md); color: var(--text-pri); }
+        .db-btn.active {
+            background: var(--green-dim);
+            border-color: var(--green);
+            color: var(--green);
+        }
+        .db-status {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+        .db-status span { color: var(--green); font-weight: 500; }
+
+        .schema-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .schema-scroll::-webkit-scrollbar { width: 4px; }
+        .schema-scroll::-webkit-scrollbar-track { background: transparent; }
+        .schema-scroll::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 2px; }
+
+        .table-entry { margin-bottom: 4px; }
+        .table-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 5px 6px;
+            border-radius: 5px;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text-sec);
+            transition: all 0.1s;
+        }
+        .table-toggle:hover { background: var(--navy-card); color: var(--text-pri); }
+        .caret { font-size: 9px; color: var(--text-dim); transition: transform 0.15s; }
+        .caret.open { transform: rotate(90deg); }
+        .column-list { padding-left: 20px; margin: 2px 0 4px; }
+        .column-item {
+            font-size: 11.5px;
+            color: var(--text-dim);
+            padding: 2px 0;
+            font-family: var(--mono);
+        }
+        .col-type { color: var(--text-dim); opacity: 0.7; margin-left: 4px; }
+
+        /* upload file */
+        .upload-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px;
+            border: 1px dashed var(--border-md);
+            border-radius: 7px;
+            color: var(--text-dim);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .upload-label:hover { border-color: var(--green); color: var(--green); }
+        #dbUpload { display: none; }
+
+        /* ─── MAIN EDITOR AREA ─── */
+        .editor-main {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--navy);
+        }
+        .editor-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            background: var(--navy-mid);
+        }
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .toolbar-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-sec);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-right: 8px;
+        }
+
+        /* ─── BUTTONS ─── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-family: var(--sans);
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 6px 13px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .btn-primary {
+            background: var(--green);
+            color: #fff;
+        }
+        .btn-primary:hover { background: #05a813; }
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid var(--border-md);
+            color: var(--text-sec);
+        }
+        .btn-ghost:hover { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+
+        /* ─── CODEMIRROR OVERRIDES ─── */
+        #editorWrapper {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+        .CodeMirror {
+            height: 100% !important;
+            background: var(--navy) !important;
+            color: #c9d8e8 !important;
+            font-family: var(--mono) !important;
+            font-size: 13.5px !important;
+            line-height: 1.7 !important;
+            border: none !important;
+        }
+        .CodeMirror-gutters {
+            background: var(--navy-mid) !important;
+            border-right: 1px solid var(--border) !important;
+        }
+        .CodeMirror-linenumber { color: var(--text-dim) !important; }
+        .CodeMirror-cursor { border-left: 2px solid var(--green) !important; }
+        .CodeMirror-selected { background: rgba(6,192,21,0.1) !important; }
+        .CodeMirror-focused .CodeMirror-selected { background: rgba(6,192,21,0.15) !important; }
+
+        /* SQL syntax colors */
+        .cm-keyword { color: #7dd3fc !important; font-weight: 500 !important; }
+        .cm-string  { color: #86efac !important; }
+        .cm-number  { color: #fbbf24 !important; }
+        .cm-comment { color: var(--text-dim) !important; font-style: italic !important; }
+        .cm-operator { color: #c4b5fd !important; }
+
+        /* ─── RESULT AREA ─── */
+        .result-panel {
+            border-top: 1px solid var(--border);
+            background: var(--navy-mid);
+            height: 220px;
+            overflow: auto;
+            flex-shrink: 0;
+        }
+        .result-panel::-webkit-scrollbar { height: 4px; width: 4px; }
+        .result-panel::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 2px; }
+        .result-bar {
+            display: flex;
+            align-items: center;
+            padding: 6px 14px;
+            background: var(--navy-card);
+            border-bottom: 1px solid var(--border);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            position: sticky;
+            top: 0;
+        }
+        .result-content { padding: 12px 14px; }
+        .result-empty { color: var(--text-dim); font-size: 12.5px; font-style: italic; }
+        .result-error { color: #f87171; font-size: 12.5px; font-family: var(--mono); }
+
+        /* result table */
+        .result-table { border-collapse: collapse; width: 100%; font-size: 12.5px; font-family: var(--mono); }
+        .result-table th {
+            text-align: left;
+            padding: 6px 12px;
+            background: var(--navy-card);
+            color: var(--text-sec);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        .result-table td {
+            padding: 6px 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-pri);
+            white-space: nowrap;
+        }
+        .result-table tr:hover td { background: var(--navy-card); }
+
+        /* ─── FEEDBACK PANEL ─── */
+        .feedback-col {
+            background: var(--navy-mid);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .feedback-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .feedback-title {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+        .ai-badge {
+            font-size: 10px;
+            font-weight: 600;
+            background: var(--green-dim);
+            color: var(--green);
+            border: 1px solid rgba(6,192,21,0.3);
+            border-radius: 4px;
+            padding: 2px 7px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .feedback-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--text-sec);
+        }
+        .feedback-body::-webkit-scrollbar { width: 4px; }
+        .feedback-body::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 2px; }
+        .feedback-empty { font-style: italic; color: var(--text-dim); font-size: 12.5px; }
+        .feedback-text strong { color: var(--text-pri); }
+
+        .feedback-footer {
+            padding: 12px 16px;
+            border-top: 1px solid var(--border);
+        }
+        .pvc-callout {
+            background: var(--navy-card);
+            border: 1px solid var(--border-md);
+            border-radius: 8px;
+            padding: 12px 14px;
+        }
+        .pvc-callout-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--green);
+            margin-bottom: 4px;
+        }
+        .pvc-callout p {
+            font-size: 11.5px;
+            color: var(--text-sec);
+            line-height: 1.55;
+            margin-bottom: 8px;
+        }
+        .pvc-callout a {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--green);
+            text-decoration: none;
+            padding: 5px 0;
+        }
+        .pvc-callout a:hover { text-decoration: underline; }
+
+        /* spinner */
+        .spinner {
+            display: inline-block;
+            width: 14px; height: 14px;
+            border: 2px solid var(--border-md);
+            border-top-color: var(--green);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            flex-shrink: 0;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ─── QUERY COUNTER BAR ─── */
+        #queryCounterBar {
+            display: none;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--navy-card);
+            border-top: 1px solid var(--border-md);
+            padding: 10px 1.5rem;
+            z-index: 8888;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 12.5px;
+            color: var(--text-sec);
+        }
+        #queryCounterBar strong { color: var(--green); }
+
+        /* ─── EMAIL GATE MODAL ─── */
         #emailGateOverlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.55);
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
             z-index: 9999;
             align-items: center;
             justify-content: center;
             padding: 1rem;
         }
-        #emailGateOverlay.active {
-            display: flex;
-        }
+        #emailGateOverlay.active { display: flex; }
+
         #emailGateModal {
-            background: #ffffff;
-            border-radius: 14px;
-            max-width: 480px;
+            background: var(--navy-card);
+            border: 1px solid var(--border-md);
+            border-radius: 16px;
+            max-width: 460px;
             width: 100%;
-            padding: 2rem 2rem 1.75rem;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-            position: relative;
+            padding: 2rem;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(6,192,21,0.1);
             animation: modalIn 0.25s ease;
         }
         @keyframes modalIn {
             from { opacity: 0; transform: translateY(16px) scale(0.97); }
             to   { opacity: 1; transform: translateY(0) scale(1); }
         }
-        #emailGateModal .gate-eyebrow {
-            font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 0.08em;
+
+        .gate-eyebrow {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
-            color: #06c015;
-            margin-bottom: 0.5rem;
+            color: var(--green);
+            margin-bottom: 0.6rem;
         }
         #emailGateModal h2 {
-            font-size: 1.35rem;
+            font-size: 1.3rem;
             font-weight: 700;
-            color: #111;
+            color: var(--text-pri);
             margin-bottom: 0.6rem;
-            line-height: 1.3;
+            line-height: 1.35;
         }
-        #emailGateModal .gate-sub {
-            font-size: 0.92rem;
-            color: #555;
-            line-height: 1.6;
-            margin-bottom: 1.4rem;
+        .gate-sub {
+            font-size: 13px;
+            color: var(--text-sec);
+            line-height: 1.65;
+            margin-bottom: 1.25rem;
         }
-        #emailGateModal .gate-sub strong {
-            color: #111;
-        }
-        #emailGateModal .gate-benefit {
+        .gate-sub strong { color: var(--text-pri); }
+
+        .gate-benefit {
             display: flex;
             align-items: flex-start;
             gap: 10px;
-            background: #f7fff9;
-            border: 1px solid #d0f0d4;
+            background: var(--green-dim);
+            border: 1px solid rgba(6,192,21,0.2);
             border-radius: 8px;
-            padding: 0.75rem 1rem;
+            padding: 12px 14px;
             margin-bottom: 1.25rem;
-            font-size: 0.88rem;
-            color: #2a5c2e;
-            line-height: 1.5;
+            font-size: 12.5px;
+            color: #a7f3b4;
+            line-height: 1.55;
         }
-        #emailGateModal .gate-benefit .benefit-icon {
-            font-size: 1.1rem;
-            flex-shrink: 0;
-            margin-top: 1px;
-        }
-        #emailGateModal .gate-form {
+        .benefit-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+        .gate-form {
             display: flex;
             flex-direction: column;
-            gap: 0.65rem;
-            margin-bottom: 0.85rem;
+            gap: 8px;
+            margin-bottom: 0.75rem;
         }
-        #emailGateModal .gate-form input {
-            border: 1px solid #ddd;
+        .gate-form input {
+            background: var(--navy-mid);
+            border: 1px solid var(--border-md);
             border-radius: 7px;
-            padding: 0.6rem 0.9rem;
-            font-size: 0.95rem;
-            font-family: 'Inter', sans-serif;
-            color: #222;
+            padding: 10px 12px;
+            font-size: 13.5px;
+            font-family: var(--sans);
+            color: var(--text-pri);
             outline: none;
-            transition: border-color 0.15s;
+            transition: border-color 0.15s, box-shadow 0.15s;
             width: 100%;
         }
-        #emailGateModal .gate-form input:focus {
-            border-color: #06c015;
-            box-shadow: 0 0 0 3px rgba(6,192,21,0.12);
+        .gate-form input::placeholder { color: var(--text-dim); }
+        .gate-form input:focus {
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px var(--green-glow);
         }
-        #emailGateModal .gate-submit {
-            background: #06c015;
-            color: white;
+
+        .gate-submit {
+            background: var(--green);
+            color: #fff;
             border: none;
             border-radius: 7px;
-            padding: 0.7rem 1rem;
-            font-size: 0.97rem;
-            font-weight: 600;
-            font-family: 'Inter', sans-serif;
+            padding: 11px 16px;
+            font-size: 13.5px;
+            font-weight: 700;
+            font-family: var(--sans);
             cursor: pointer;
             width: 100%;
-            transition: background 0.2s;
+            transition: background 0.15s;
+            letter-spacing: 0.01em;
         }
-        #emailGateModal .gate-submit:hover { background: #059e11; }
-        #emailGateModal .gate-submit:disabled {
-            background: #aaa;
-            cursor: not-allowed;
-        }
-        #emailGateModal .gate-privacy {
-            font-size: 0.75rem;
-            color: #bbb;
+        .gate-submit:hover { background: #05a813; }
+        .gate-submit:disabled { background: var(--text-dim); cursor: not-allowed; }
+
+        .gate-skip {
             text-align: center;
-            margin-top: 0.4rem;
+            margin-top: 10px;
         }
-        #emailGateModal .gate-success {
+        .gate-skip a {
+            font-size: 11.5px;
+            color: var(--text-dim);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .gate-skip a:hover { color: var(--text-sec); }
+
+        .gate-privacy {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        #gateError {
+            font-size: 12px;
+            color: #f87171;
+            display: none;
+        }
+
+        .gate-success {
             display: none;
             text-align: center;
             padding: 1rem 0 0.5rem;
         }
-        #emailGateModal .gate-success .success-icon {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-        }
-        #emailGateModal .gate-success h3 {
+        .success-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .gate-success h3 {
             font-size: 1.15rem;
             font-weight: 700;
-            color: #06c015;
+            color: var(--green);
             margin-bottom: 0.4rem;
         }
-        #emailGateModal .gate-success p {
-            font-size: 0.9rem;
-            color: #555;
-            line-height: 1.5;
-        }
-        #gateError {
-            font-size: 0.82rem;
-            color: #c0392b;
-            margin-top: -0.3rem;
-            display: none;
-        }
+        .gate-success p { font-size: 13px; color: var(--text-sec); line-height: 1.55; }
 
-        /* ── QUERY COUNTER BAR ── */
-        #queryCounterBar strong { color: #059e11; }
+        /* ─── ECOSYSTEM FOOTER ─── */
+        .ecosystem-footer {
+            background: var(--navy-mid);
+            border-top: 1px solid var(--border);
+            padding: 14px 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-dim);
+            flex-wrap: wrap;
+        }
+        .ecosystem-footer .eco-label {
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-right: 8px;
+        }
+        .ecosystem-footer a {
+            color: var(--text-dim);
+            text-decoration: none;
+            padding: 3px 8px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            transition: all 0.15s;
+        }
+        .ecosystem-footer a:hover {
+            color: var(--green);
+            border-color: rgba(6,192,21,0.3);
+            background: var(--green-dim);
+        }
+        .eco-sep { color: var(--border-md); }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 900px) {
+            .app-shell {
+                grid-template-columns: 1fr;
+                height: auto;
+                overflow: auto;
+            }
+            .sidebar { height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+            .editor-main { height: 60vh; }
+            .feedback-col { border-left: none; border-top: 1px solid var(--border); height: 300px; }
+        }
     </style>
 </head>
 <body>
 
-<!-- Top Navigation Bar -->
-<nav class="navbar navbar-light bg-white border border-light shadow-sm mb-3 rounded px-3">
-  <div class="d-flex align-items-center justify-content-between w-100">
-    <div class="d-flex align-items-center">
-      <img src="wsda-logo.png" alt="WSDA Logo" style="height:44px;">
+<!-- ─── NAV ─── -->
+<nav class="nav">
+    <div class="nav-logo">
+        <img src="wsda-logo.png" alt="WSDA Learning">
     </div>
-    <div class="launch-cta">
-      <span>Join the waitlist for <strong>The AI-Enabled Data Analyst</strong></span>
-      <a href="https://www.wsdalearning.ai" target="_blank">Learn More →</a>
+    <div class="nav-cta">
+        <span>Now enrolling: <strong>AI-Enabled Data Analyst</strong></span>
+        <a href="https://www.wsdalearning.ai" target="_blank">Enroll Now →</a>
     </div>
-  </div>
 </nav>
 
-<!-- ── EMAIL GATE MODAL ── -->
+<!-- ─── EMAIL GATE MODAL ─── -->
 <div id="emailGateOverlay">
-  <div id="emailGateModal">
+    <div id="emailGateModal">
+        <div id="gateFormContent">
+            <div class="gate-eyebrow">SQL learner detected 👋</div>
+            <h2>You're building something real. Keep the momentum going.</h2>
+            <p class="gate-sub">Enter your name and email to <strong>stay connected with Walter</strong> and get early access to <strong>PVC Practitioner</strong> — the tool for analysts working alongside AI.</p>
 
-    <!-- Default state: form -->
-    <div id="gateFormContent">
-      <div class="gate-eyebrow">Welcome, SQL learner 👋</div>
-      <h2>You've been learning with Walter. Keep the conversation going.</h2>
-      <p class="gate-sub">Enter your name and email to <strong>stay connected with Walter</strong> and get early access to <strong>PVC Practitioner</strong> — his new tool for data professionals working alongside AI.</p>
+            <div class="gate-benefit">
+                <span class="benefit-icon">🚀</span>
+                <span>The <strong>PVC Framework</strong> — Prompt, Validate, Communicate. The new standard for how data analysts work with AI without losing accuracy or trust.</span>
+            </div>
 
-      <div class="gate-benefit">
-        <span class="benefit-icon">🚀</span>
-        <span>The <strong>PVC Framework</strong> — Prompt, Validate, Communicate. The new standard for how data analysts work with AI without losing accuracy, trust, or their value to an organization.</span>
-      </div>
+            <div class="gate-form">
+                <input type="text" id="gateFirstName" placeholder="First name" autocomplete="given-name">
+                <input type="email" id="gateEmail" placeholder="Work or personal email" autocomplete="email">
+                <div id="gateError">Please enter a valid name and email.</div>
+                <button class="gate-submit" id="gateSubmitBtn" onclick="submitEmailGate()">
+                    Join Walter's learner community →
+                </button>
+            </div>
 
-      <div class="gate-form">
-        <input type="text" id="gateFirstName" placeholder="First name" autocomplete="given-name">
-        <input type="email" id="gateEmail" placeholder="Work or personal email" autocomplete="email">
-        <div id="gateError">Please enter a valid name and email address.</div>
-        <button class="gate-submit" id="gateSubmitBtn" onclick="submitEmailGate()">
-          Join Walter's learner community →
-        </button>
-      </div>
+            <div class="gate-skip">
+                <a onclick="skipEmailGate()">No thanks, I'll skip for now</a>
+            </div>
+            <div class="gate-privacy">No spam. This is how Walter stays in touch with learners. Unsubscribe anytime.</div>
+        </div>
 
-      <div class="gate-privacy">No spam. This is how Walter stays in touch with learners. Unsubscribe anytime.</div>
+        <div class="gate-success" id="gateSuccessContent">
+            <div class="success-icon">✅</div>
+            <h3>You're in!</h3>
+            <p>Your progress is saved. Keep querying — the editor is all yours.</p>
+        </div>
     </div>
-
-    <!-- Success state -->
-    <div class="gate-success" id="gateSuccessContent">
-      <div class="success-icon">✅</div>
-      <h3>You're in!</h3>
-      <p>Your progress is saved. Keep querying — the editor is all yours.</p>
-    </div>
-
-  </div>
 </div>
 
-<!-- ── QUERY COUNTER BAR ── -->
-<div id="queryCounterBar" style="display:none; position:fixed; bottom:0; left:0; right:0; background:#f7fff9; border-top:1px solid #b8eabc; padding:0.5rem 1.25rem; z-index:8888; align-items:center; justify-content:space-between; gap:12px; font-size:0.88rem; color:#2a5c2e;">
-  <span id="queryCounterText">You have <strong id="queriesLeft">2</strong> free queries remaining. Save your progress to keep going.</span>
+<!-- ─── QUERY COUNTER BAR ─── -->
+<div id="queryCounterBar">
+    <span>You have <strong id="queriesLeft">2</strong> free queries remaining. Save your progress to keep going.</span>
 </div>
 
-<div class="container-fluid">
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-12 col-md-3 mb-3">
-            <div class="section">
-                <h5>📊 Database Loader</h5>
-                <div class="border rounded p-2 mb-2">
-                    <div class="d-grid gap-2 mb-2">
-                        <button id="digitalBtn" class="btn btn-outline-success btn-sm" onclick="loadDigitalEvidenceDB()">
-                            Load Digital Evidence Database
-                        </button>
-                        <button id="pixelBtn" class="btn btn-success btn-sm" onclick="loadPixelMetricsDB()">
-                            Load PixelMetrics Database
-                        </button>
-                    </div>
-                    <div class="small text-muted">
-                        Current Database: <strong id="currentDatabase">PixelMetrics</strong>
-                    </div>
-                </div>
-            </div>
-            <div class="section">
-                <h5>📂 Database Schema</h5>
-                <div id="schemaSidebar"><em>No database loaded.</em></div>
+<!-- ─── APP SHELL ─── -->
+<div class="app-shell">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-label">Database</div>
+            <button id="pixelBtn" class="db-btn active" onclick="loadPixelMetricsDB()">PixelMetrics</button>
+            <button id="digitalBtn" class="db-btn" onclick="loadDigitalEvidenceDB()">Digital Evidence</button>
+            <div class="db-status">Active: <span id="currentDatabase">PixelMetrics</span></div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">Upload</div>
+            <label class="upload-label" for="dbUpload">
+                <span>📂</span> Load your .db file
+            </label>
+            <input type="file" id="dbUpload" accept=".sqlite,.db" onchange="loadDatabase(event)">
+        </div>
+
+        <div class="schema-scroll">
+            <div class="sidebar-label">Schema</div>
+            <div id="schemaSidebar"><span style="color:var(--text-dim);font-size:12px;">Loading…</span></div>
+        </div>
+    </aside>
+
+    <!-- MAIN EDITOR -->
+    <main class="editor-main">
+        <div class="editor-toolbar">
+            <div class="toolbar-left">
+                <span class="toolbar-title">SQL Editor</span>
+                <button class="btn btn-primary" onclick="runQuery()">▶ Run</button>
+                <button class="btn btn-ghost" onclick="reviewQuery()">✦ Review</button>
+                <button class="btn btn-ghost" onclick="exportQuery()">↓ Query</button>
+                <button class="btn btn-ghost" onclick="exportResults()">↓ Results</button>
             </div>
         </div>
 
-        <!-- Main Editor Area -->
-        <div class="col-12 col-md-6 mb-3">
-            <div class="section">
-                <div class="editor-header d-flex align-items-center mb-2">
-                    <h5 class="mb-0 text-white">WSDA SQL Editor</h5>
-                </div>
-                <div id="editorWrapper">
-                    <textarea id="editor"></textarea>
-                </div>
-                <div class="d-flex flex-wrap gap-2 mt-2">
-                    <button class="btn btn-success" onclick="runQuery()">Run Query</button>
-                    <button class="btn btn-outline-success" onclick="reviewQuery()">Review My Query</button>
-                    <button class="btn btn-outline-success" onclick="exportQuery()">Export Query</button>
-                    <button class="btn btn-outline-success" onclick="exportResults()">Export Results</button>
-                    <input type="file" id="dbUpload" accept=".sqlite,.db" onchange="loadDatabase(event)" class="form-control form-control-sm" style="width: auto;">
-                </div>
-                <div id="resultArea" class="border mt-3 p-2" style="overflow-x: auto; max-height: 300px; overflow-y: auto;"></div>
-            </div>
+        <div id="editorWrapper">
+            <textarea id="editor"></textarea>
         </div>
 
-        <!-- AI Review Feedback -->
-        <div class="col-12 col-md-3 mb-3">
-            <div class="section">
-                <h5>🤖 Walter AI Feedback</h5>
-                <div id="feedbackPanel">
-                    <em>Feedback will appear here after review.</em>
-                </div>
+        <div class="result-panel">
+            <div class="result-bar">Output</div>
+            <div class="result-content" id="resultArea">
+                <span class="result-empty">Run a query to see results.</span>
             </div>
         </div>
-    </div>
+    </main>
 
-    <div class="container mt-5 rounded">
-        <div class="p-4 bg-white rounded shadow-sm">
-            <h6 class="text-success fw-bold mb-3 text-center">About This Tool</h6>
-            <p class="small text-muted text-center mb-4">
-                The WSDA SQL Editor is your free, AI-enhanced platform for practicing SQL skills.
-            </p>
-
-            <div class="row g-3 mb-4">
-                <div class="col-12 col-md-4">
-                    <div class="border border-success rounded p-3 h-100" style="border-color: #d0f0d4 !important;">
-                        <div class="fw-semibold text-success mb-1">🗄️ Practice Databases</div>
-                        <p class="small text-muted mb-0">Load the <strong>PixelMetrics</strong> database used in Walter's LinkedIn Learning course, or the <strong>Digital Evidence</strong> database for forensic SQL practice. Upload your own <code>.db</code> file too.</p>
-                    </div>
-                </div>
-                <div class="col-12 col-md-4">
-                    <div class="border rounded p-3 h-100" style="border-color: #d0f0d4 !important;">
-                        <div class="fw-semibold text-success mb-1">🤖 Walter AI Feedback</div>
-                        <p class="small text-muted mb-0">Write a query and click <strong>Review My Query</strong> to get real-time, encouraging feedback from Walter AI — covering correctness, style, and improvement tips.</p>
-                    </div>
-                </div>
-                <div class="col-12 col-md-4">
-                    <div class="border rounded p-3 h-100" style="border-color: #d0f0d4 !important;">
-                        <div class="fw-semibold text-success mb-1">📤 Export Your Work</div>
-                        <p class="small text-muted mb-0">Export your SQL query as a <code>.sql</code> file or download your results as a <code>.csv</code> file. Build a portfolio of your SQL work as you learn.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="border rounded p-3" style="border-color: #d0f0d4 !important; background: #f7fff9;">
-                <div class="d-flex align-items-start gap-3 flex-wrap">
-                    <div class="flex-grow-1">
-                        <div class="fw-semibold text-success mb-1">🚀 Ready to take SQL further in the AI era?</div>
-                        <p class="small text-muted mb-0">
-                            <strong>PVC Practitioner</strong> is Walter's new professional tool — connect your own database, validate AI-generated queries, and communicate findings to stakeholders.
-                            The new standard for data analysts working alongside AI.
-                        </p>
-                    </div>
-                    <a href="https://pvc.wsdalearning.ai" target="_blank" class="btn btn-success btn-sm align-self-center" style="white-space:nowrap;">Try PVC Practitioner →</a>
-                </div>
+    <!-- FEEDBACK COLUMN -->
+    <aside class="feedback-col">
+        <div class="feedback-header">
+            <span class="feedback-title">Walter AI</span>
+            <span class="ai-badge">Live</span>
+        </div>
+        <div class="feedback-body" id="feedbackPanel">
+            <span class="feedback-empty">Write a query and click Review to get AI feedback on your SQL.</span>
+        </div>
+        <div class="feedback-footer">
+            <div class="pvc-callout">
+                <div class="pvc-callout-label">PVC Practitioner</div>
+                <p>Connect your own database, validate AI-generated queries, and communicate findings clearly.</p>
+                <a href="https://pvc.wsdalearning.ai" target="_blank">Try PVC Practitioner →</a>
             </div>
         </div>
-    </div>
-    <footer class="text-center text-muted small mt-4 mb-2">
-        © 2026 WSDA Learning. All rights reserved.
-    </footer>
+    </aside>
 </div>
+
+<!-- ─── ECOSYSTEM FOOTER ─── -->
+<footer class="ecosystem-footer">
+    <span class="eco-label">WSDA Ecosystem</span>
+    <a href="https://wsdalearning.ai" target="_blank">wsdalearning.ai</a>
+    <span class="eco-sep">·</span>
+    <a href="https://sqleditor.wsdalearning.ai" target="_blank">SQL Editor</a>
+    <span class="eco-sep">·</span>
+    <a href="https://pvc.wsdalearning.ai" target="_blank">PVC Practitioner</a>
+    <span class="eco-sep">·</span>
+    <a href="https://wsdalearning.ai/news" target="_blank">WSDA News</a>
+</footer>
 
 <script>
-// ─────────────────────────────────────────────
-// CONFIGURATION — replace before deploying
-// ─────────────────────────────────────────────
+// ─── CONFIGURATION ───
 const KLAVIYO_PUBLIC_KEY = 'Xq8cpH';
 const KLAVIYO_LIST_ID    = 'RxbHkP';
-// ─────────────────────────────────────────────
 
-let db;
-let editor;
-let SQL;
+// ─── STATE ───
+let db, editor, SQL;
 let queryRunCount = parseInt(sessionStorage.getItem('wsda_query_count') || '0');
 let gateShown = false;
 
+// ─── INIT ───
 window.onload = async function() {
-    SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}` });
+    SQL = await initSqlJs({ locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${f}` });
 
-    const response = await fetch('pixelmetrics.db');
-    const buffer = await response.arrayBuffer();
-    db = new SQL.Database(new Uint8Array(buffer));
-
-    document.getElementById("currentDatabase").innerText = "PixelMetrics";
+    const res = await fetch('pixelmetrics.db');
+    const buf = await res.arrayBuffer();
+    db = new SQL.Database(new Uint8Array(buf));
 
     editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
         mode: 'text/x-sql',
         theme: 'default',
         lineNumbers: true,
-        viewportMargin: Infinity
+        viewportMargin: Infinity,
+        lineWrapping: false,
+        extraKeys: { 'Ctrl-Enter': runQuery, 'Cmd-Enter': runQuery }
     });
 
-    const editorWrapper = document.getElementById("editorWrapper");
-    function syncEditorSize() {
-        editor.setSize("100%", editorWrapper.clientHeight);
+    const wrapper = document.getElementById('editorWrapper');
+    const ro = new ResizeObserver(() => {
+        editor.setSize('100%', wrapper.clientHeight);
         editor.refresh();
-    }
-    const resizeObserver = new ResizeObserver(() => { syncEditorSize(); });
-    resizeObserver.observe(editorWrapper);
-    syncEditorSize();
+    });
+    ro.observe(wrapper);
+    editor.setSize('100%', wrapper.clientHeight);
 
+    updateDatabaseButtons('pixel');
     refreshSchema();
-    updateDatabaseButtons("pixel");
 
-    // Show gate on load if session count already reached 3
     if (queryRunCount >= 3 && shouldShowGate()) {
         setTimeout(showEmailGate, 500);
     }
 };
 
-
-// ─────────────────────────────────────────────
-// EMAIL GATE LOGIC
-// ─────────────────────────────────────────────
-
+// ─── GATE ───
 function shouldShowGate() {
-    if (localStorage.getItem('wsda_email_captured') === 'true') return false;
-    if (gateShown) return false;
-    return true;
+    return localStorage.getItem('wsda_email_captured') !== 'true' && !gateShown;
 }
 
 function showEmailGate() {
@@ -545,16 +820,12 @@ function showEmailGate() {
     gateShown = true;
     document.getElementById('queryCounterBar').style.display = 'none';
     document.getElementById('emailGateOverlay').classList.add('active');
-    setTimeout(() => {
-        document.getElementById('gateFirstName').focus();
-    }, 300);
+    setTimeout(() => document.getElementById('gateFirstName').focus(), 300);
 }
 
-function reopenEmailGate() {
-    document.getElementById('gateFormContent').style.display = 'block';
-    document.getElementById('gateSuccessContent').style.display = 'none';
-    document.getElementById('emailGateOverlay').classList.add('active');
-    setTimeout(() => { document.getElementById('gateFirstName').focus(); }, 300);
+function skipEmailGate() {
+    document.getElementById('emailGateOverlay').classList.remove('active');
+    localStorage.setItem('wsda_gate_skipped', Date.now());
 }
 
 function updateQueryCounter() {
@@ -571,21 +842,17 @@ async function submitEmailGate() {
     const firstName = document.getElementById('gateFirstName').value.trim();
     const email     = document.getElementById('gateEmail').value.trim();
     const errorEl   = document.getElementById('gateError');
-    const submitBtn = document.getElementById('gateSubmitBtn');
+    const btn       = document.getElementById('gateSubmitBtn');
 
-    // Basic validation
-    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    if (!firstName || !emailValid) {
+    if (!firstName || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         errorEl.style.display = 'block';
         return;
     }
     errorEl.style.display = 'none';
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Sending...';
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
 
     try {
-        // Klaviyo Client Subscription API — official spec payload
         const payload = {
             data: {
                 type: 'subscription',
@@ -594,45 +861,25 @@ async function submitEmailGate() {
                     profile: {
                         data: {
                             type: 'profile',
-                            attributes: {
-                                email: email,
-                                first_name: firstName
-                            }
+                            attributes: { email, first_name: firstName }
                         }
                     }
                 },
-                relationships: {
-                    list: {
-                        data: {
-                            type: 'list',
-                            id: KLAVIYO_LIST_ID
-                        }
-                    }
-                }
+                relationships: { list: { data: { type: 'list', id: KLAVIYO_LIST_ID } } }
             }
         };
-
         const res = await fetch(`https://a.klaviyo.com/client/subscriptions/?company_id=${KLAVIYO_PUBLIC_KEY}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'revision': '2024-10-15'
-            },
+            headers: { 'Content-Type': 'application/json', 'revision': '2024-10-15' },
             body: JSON.stringify(payload)
         });
-
-        // Klaviyo returns 202 on success (no body)
         if (res.status === 202 || res.ok) {
             localStorage.setItem('wsda_email_captured', 'true');
             localStorage.setItem('wsda_subscriber_name', firstName);
             showGateSuccess(firstName);
-        } else {
-            throw new Error('Klaviyo returned ' + res.status);
-        }
-
+        } else { throw new Error('Klaviyo ' + res.status); }
     } catch (err) {
-        console.error('Email gate error:', err);
-        // On API error — still let them in, silently log
+        console.error(err);
         localStorage.setItem('wsda_email_captured', 'true');
         showGateSuccess(firstName);
     }
@@ -640,326 +887,196 @@ async function submitEmailGate() {
 
 function showGateSuccess(firstName) {
     document.getElementById('gateFormContent').style.display = 'none';
-    const successEl = document.getElementById('gateSuccessContent');
-    successEl.style.display = 'block';
-
-    if (firstName) {
-        successEl.querySelector('h3').textContent = `You're in, ${firstName}!`;
-    }
-
-    // Close modal after 2.5 seconds — return them to the editor
-    setTimeout(() => {
-        document.getElementById('emailGateOverlay').classList.remove('active');
-    }, 2500);
+    const s = document.getElementById('gateSuccessContent');
+    s.style.display = 'block';
+    if (firstName) s.querySelector('h3').textContent = `You're in, ${firstName}!`;
+    setTimeout(() => document.getElementById('emailGateOverlay').classList.remove('active'), 2500);
 }
 
-
-// ─────────────────────────────────────────────
-// CORE EDITOR FUNCTIONS
-// ─────────────────────────────────────────────
-
+// ─── QUERY RUNNER ───
 function runQuery() {
-    const query = editor.getValue();
+    const query = editor.getValue().trim();
+    if (!query) return;
+
     try {
         const results = db.exec(query);
         if (results.length > 0) {
-            const tableHtml = generateTableHtml(results[0]);
-            document.getElementById('resultArea').innerHTML = tableHtml;
+            document.getElementById('resultArea').innerHTML = generateTableHtml(results[0]);
         } else {
-            document.getElementById('resultArea').innerHTML = '<p>No results.</p>';
+            document.getElementById('resultArea').innerHTML = '<span class="result-empty">Query ran successfully — no rows returned.</span>';
         }
     } catch (err) {
-        document.getElementById('resultArea').innerHTML = '<div class="text-danger">Error: ' + err.message + '</div>';
+        document.getElementById('resultArea').innerHTML = `<span class="result-error">Error: ${err.message}</span>`;
     }
     refreshSchema();
 
-    // Trigger gate after 3 query runs
     queryRunCount++;
     sessionStorage.setItem('wsda_query_count', queryRunCount);
     updateQueryCounter();
-    if (queryRunCount === 3) {
-        setTimeout(showEmailGate, 800);
-    }
+    if (queryRunCount === 3) setTimeout(showEmailGate, 800);
 }
 
 function generateTableHtml(result) {
-    let html = '<table class="table table-sm table-striped"><thead><tr>';
+    let html = '<table class="result-table"><thead><tr>';
     result.columns.forEach(col => { html += `<th>${col}</th>`; });
     html += '</tr></thead><tbody>';
     result.values.forEach(row => {
         html += '<tr>';
-        row.forEach(val => { html += `<td>${val}</td>`; });
+        row.forEach(val => { html += `<td>${val ?? '<span style="color:var(--text-dim)">NULL</span>'}</td>`; });
         html += '</tr>';
     });
     html += '</tbody></table>';
     return html;
 }
 
+// ─── SCHEMA ───
+function refreshSchema() {
+    try {
+        const result = db.exec("SELECT name, type FROM sqlite_master WHERE type IN ('table','view') ORDER BY type, name");
+        if (!result.length) { document.getElementById('schemaSidebar').innerHTML = '<span style="color:var(--text-dim);font-size:12px;">No tables found.</span>'; return; }
+        let html = '';
+        result[0].values.forEach(([name, type]) => {
+            if (type === 'table') {
+                html += `<div class="table-entry">
+                    <div class="table-toggle" onclick="toggleTable('${name}')">
+                        <span id="caret-${name}" class="caret">▶</span>
+                        <span>${name}</span>
+                    </div>
+                    <div id="cols-${name}" class="column-list" style="display:none;"></div>
+                </div>`;
+            }
+        });
+        document.getElementById('schemaSidebar').innerHTML = html;
+    } catch (e) {
+        document.getElementById('schemaSidebar').innerHTML = '<span style="color:var(--text-dim);font-size:12px;">Error loading schema.</span>';
+    }
+}
+
+function toggleTable(name) {
+    const colDiv = document.getElementById('cols-' + name);
+    const caret  = document.getElementById('caret-' + name);
+    if (colDiv.style.display === 'none') {
+        const result = db.exec(`PRAGMA table_info(${name});`);
+        if (result.length) {
+            colDiv.innerHTML = result[0].values.map(col =>
+                `<div class="column-item">↳ ${col[1]}<span class="col-type">${col[2]}</span></div>`
+            ).join('');
+        }
+        colDiv.style.display = 'block';
+        caret.textContent = '▼';
+        caret.classList.add('open');
+    } else {
+        colDiv.style.display = 'none';
+        caret.textContent = '▶';
+        caret.classList.remove('open');
+    }
+}
+
+// ─── DB LOADERS ───
 function loadDatabase(event) {
     const file = event.target.files[0];
+    if (!file) return;
     const reader = new FileReader();
-    reader.onload = async function(e) {
+    reader.onload = async e => {
         try {
-            const SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}` });
-            const Uints = new Uint8Array(e.target.result);
-            db = new SQL.Database(Uints);
+            db = new SQL.Database(new Uint8Array(e.target.result));
             refreshSchema();
-            document.getElementById('resultArea').innerHTML = '<em>New database loaded. Run a query!</em>';
+            document.getElementById('resultArea').innerHTML = '<span class="result-empty">Database loaded. Run a query.</span>';
             editor.setValue('');
-            document.getElementById('feedbackPanel').innerHTML = '<em>Feedback will appear here after review.</em>';
-        } catch (error) {
-            console.error("Error loading database:", error);
-            alert("Failed to load the selected database. Please make sure it is a valid SQLite .db file.");
-        }
+            document.getElementById('feedbackPanel').innerHTML = '<span class="feedback-empty">Write a query and click Review to get AI feedback on your SQL.</span>';
+        } catch (err) { alert('Failed to load database. Make sure it is a valid SQLite .db file.'); }
     };
     reader.readAsArrayBuffer(file);
 }
 
+async function loadPixelMetricsDB() {
+    const buf = await (await fetch('pixelmetrics.db')).arrayBuffer();
+    db = new SQL.Database(new Uint8Array(buf));
+    document.getElementById('currentDatabase').textContent = 'PixelMetrics';
+    updateDatabaseButtons('pixel');
+    refreshSchema();
+    document.getElementById('resultArea').innerHTML = '<span class="result-empty">PixelMetrics loaded.</span>';
+    editor.setValue('');
+}
+
+async function loadDigitalEvidenceDB() {
+    const buf = await (await fetch('DigitalEvidenceDB_25.db')).arrayBuffer();
+    db = new SQL.Database(new Uint8Array(buf));
+    document.getElementById('currentDatabase').textContent = 'Digital Evidence';
+    updateDatabaseButtons('digital');
+    refreshSchema();
+    document.getElementById('resultArea').innerHTML = '<span class="result-empty">Digital Evidence loaded.</span>';
+    editor.setValue('');
+}
+
+function updateDatabaseButtons(active) {
+    document.getElementById('pixelBtn').className   = 'db-btn' + (active === 'pixel'   ? ' active' : '');
+    document.getElementById('digitalBtn').className = 'db-btn' + (active === 'digital' ? ' active' : '');
+}
+
+// ─── EXPORT ───
 function exportQuery() {
-    const query = editor.getValue().trim();
-    if (!query) {
-        alert('No query to export. Write a query first.');
-        return;
-    }
-    const blob = new Blob([query], { type: 'text/plain' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'query.sql';
-    a.click();
+    const q = editor.getValue().trim();
+    if (!q) { alert('No query to export.'); return; }
+    dlBlob(q, 'query.sql', 'text/plain');
 }
 
 function exportResults() {
-    const resultArea = document.getElementById('resultArea');
-    const table = resultArea.querySelector('table');
-    if (!table) {
-        alert('No results to export. Run a query first.');
-        return;
-    }
-
+    const table = document.querySelector('.result-table');
+    if (!table) { alert('No results to export. Run a query first.'); return; }
     let csv = '';
-    const rows = table.querySelectorAll('tr');
-    rows.forEach(row => {
-        const cells = row.querySelectorAll('th, td');
-        const rowData = Array.from(cells).map(cell => {
-            const text = cell.textContent.replace(/"/g, '""');
-            return `"${text}"`;
-        });
-        csv += rowData.join(',') + '\n';
+    table.querySelectorAll('tr').forEach(row => {
+        csv += Array.from(row.querySelectorAll('th, td')).map(c => `"${c.textContent.replace(/"/g,'""')}"`).join(',') + '\n';
     });
+    dlBlob(csv, 'results.csv', 'text/csv');
+}
 
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'results.csv';
+function dlBlob(content, name, type) {
+    const a = Object.assign(document.createElement('a'), {
+        href: URL.createObjectURL(new Blob([content], { type })),
+        download: name
+    });
     a.click();
 }
 
-function saveDatabase() {
-    const data = db.export();
-    const blob = new Blob([data], { type: 'application/octet-stream' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'database.sqlite';
-    a.click();
-}
-
-function refreshSchema() {
-    try {
-        const result = db.exec("SELECT name, type FROM sqlite_master WHERE type IN ('table','view') ORDER BY type, name");
-        if (result.length === 0) {
-            document.getElementById('schemaSidebar').innerHTML = '<em>No tables or views found.</em>';
-            return;
-        }
-        let html = '';
-        result[0].values.forEach(row => {
-            const name = row[0];
-            const type = row[1];
-            if (type === 'table') {
-                html += `
-                    <div class="table-entry">
-                        <div class="table-toggle" onclick="toggleTable('${name}')">
-                            <span id="caret-${name}" class="caret-icon">▸</span>
-                            <span class="table-name">${name}</span>
-                        </div>
-                        <div id="cols-${name}" class="column-list" style="display:none;"></div>
-                    </div>
-                `;
-            } else if (type === 'view') {
-                html += `<div class="table-entry"><span class="table-name">📄 ${name}</span></div>`;
-            }
-        });
-        document.getElementById('schemaSidebar').innerHTML = html;
-    } catch (err) {
-        document.getElementById('schemaSidebar').innerHTML = '<em>Error loading schema.</em>';
-    }
-}
-
-function toggleTable(tableName) {
-    const colDiv = document.getElementById('cols-' + tableName);
-    const caret  = document.getElementById('caret-' + tableName);
-    if (colDiv.style.display === 'none') {
-        const result = db.exec(`PRAGMA table_info(${tableName});`);
-        if (result.length > 0) {
-            let colsHtml = '';
-            result[0].values.forEach(col => {
-                colsHtml += `<div class="column-item">↳ ${col[1]} <span class="col-type">(${col[2]})</span></div>`;
-            });
-            colDiv.innerHTML = colsHtml;
-        }
-        colDiv.style.display = 'block';
-        caret.textContent = '▾';
-    } else {
-        colDiv.style.display = 'none';
-        caret.textContent = '▸';
-    }
-}
-
-function toggleSidebar() {
-    const sidebar = document.getElementById('schemaSidebar');
-    sidebar.style.display = sidebar.style.display === 'none' ? 'block' : 'none';
-}
-
+// ─── AI REVIEW ───
 async function reviewQuery() {
     const query = editor.getValue().trim();
-    const feedbackPanel = document.getElementById('feedbackPanel');
+    const panel = document.getElementById('feedbackPanel');
+    if (!query) { panel.innerHTML = '<span style="color:#f87171;font-size:12.5px;">⚠ Write a query first.</span>'; return; }
 
-    if (!query) {
-        feedbackPanel.innerHTML = `<span class="text-danger">⚠️ Please write a query before requesting a review.</span>`;
-        return;
-    }
+    panel.innerHTML = `<div style="display:flex;align-items:center;gap:8px;color:var(--text-sec);font-size:12.5px;"><div class="spinner"></div> Reviewing your SQL…</div>`;
 
-    feedbackPanel.innerHTML = `
-        <div class="d-flex align-items-center justify-content-center">
-            <div class="spinner-border text-success me-2" role="status" style="width: 1.5rem; height: 1.5rem;">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <span>Reviewing your SQL...</span>
-        </div>`;
-
-    let schemaDescription = '';
+    let schemaTxt = '';
     try {
-        const result = db.exec("SELECT name, sql FROM sqlite_master WHERE type IN ('table', 'view') ORDER BY name;");
-        if (result.length > 0) {
-            result[0].values.forEach(row => {
-                const [tableName, tableSQL] = row;
-                schemaDescription += `\n\nTable: ${tableName}\nDefinition: ${tableSQL}`;
-            });
-        }
-    } catch (error) {
-        console.error("Error getting schema:", error);
-        schemaDescription = "(Failed to load schema)";
-    }
+        const r = db.exec("SELECT name, sql FROM sqlite_master WHERE type IN ('table','view') ORDER BY name;");
+        if (r.length) r[0].values.forEach(([n, s]) => { schemaTxt += `\nTable: ${n}\n${s}`; });
+    } catch(e) { schemaTxt = '(schema unavailable)'; }
 
     try {
-        const response = await fetch('https://wsdalearning-sqleditor-proxy.walterashields.workers.dev/sqleditor/v1/chat/completions', {
+        const res = await fetch('https://wsdalearning-sqleditor-proxy.walterashields.workers.dev/sqleditor/v1/chat/completions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: 'gpt-3.5-turbo',
                 messages: [
                     {
-                        role: "system",
-                        content: `
-                            You are a helpful SQL expert reviewing beginner SQL queries.
-                            You have access to the database schema provided.
-                            Your task:
-                            - Give helpful, encouraging feedback
-                            - Suggest small improvements or tips
-                            - If the query is correct, acknowledge it
-                            - KEEP FEEDBACK CLEAR, FRIENDLY, AND UNDER 200 WORDS
-                        `
+                        role: 'system',
+                        content: `You are Walter, a warm SQL instructor reviewing a learner's query. Give helpful, encouraging feedback — cover correctness, style, and one improvement tip. Keep it under 150 words. Use plain text, no markdown headers.`
                     },
                     {
-                        role: "user",
-                        content: `
-                            Here is the database schema:
-                            ${schemaDescription}
-
-                            Here is the SQL query to review:
-                            ${query}
-
-                            Please provide helpful, concise feedback.
-                        `
+                        role: 'user',
+                        content: `Schema:\n${schemaTxt}\n\nQuery:\n${query}\n\nPlease review.`
                     }
                 ],
-                temperature: 0.4,
-                stream: false
+                temperature: 0.4
             })
         });
-
-        const data = await response.json();
+        const data = await res.json();
         const feedback = data.choices[0].message.content.trim();
-        feedbackPanel.innerHTML = `<div><strong>AI Feedback:</strong><br>${feedback}</div>`;
-
-    } catch (error) {
-        console.error(error);
-        feedbackPanel.innerHTML = `<span class="text-danger">❌ Failed to review query.</span>`;
-    }
-}
-
-function reloadDefaultDatabase() {
-    fetch('DigitalEvidenceDB_25.db')
-        .then(response => response.arrayBuffer())
-        .then(buffer => {
-            const Uints = new Uint8Array(buffer);
-            db = new SQL.Database(Uints);
-            refreshSchema();
-            document.getElementById('resultArea').innerHTML = '<em>Default database reloaded. Run a query!</em>';
-            editor.setValue('');
-            document.getElementById('feedbackPanel').innerHTML = '<em>Feedback will appear here after review.</em>';
-        })
-        .catch(error => {
-            console.error("Error reloading default database:", error);
-            alert("Failed to reload the default database.");
-        });
-}
-
-function loadDigitalEvidenceDB() {
-    fetch('DigitalEvidenceDB_25.db')
-        .then(response => response.arrayBuffer())
-        .then(buffer => {
-            const Uints = new Uint8Array(buffer);
-            db = new SQL.Database(Uints);
-            updateDatabaseButtons("digital");
-            document.getElementById("currentDatabase").innerText = "Digital Evidence Database";
-            refreshSchema();
-            document.getElementById('resultArea').innerHTML = '<em>Digital Evidence database loaded.</em>';
-            editor.setValue('');
-        });
-}
-
-function loadPixelMetricsDB() {
-    fetch('pixelmetrics.db')
-        .then(response => response.arrayBuffer())
-        .then(buffer => {
-            const Uints = new Uint8Array(buffer);
-            db = new SQL.Database(Uints);
-            updateDatabaseButtons("pixel");
-            document.getElementById("currentDatabase").innerText = "PixelMetrics Database";
-            refreshSchema();
-            document.getElementById('resultArea').innerHTML = '<em>PixelMetrics database loaded.</em>';
-            editor.setValue('');
-        });
-}
-
-function updateDatabaseButtons(activeDB) {
-    const digitalBtn = document.getElementById("digitalBtn");
-    const pixelBtn   = document.getElementById("pixelBtn");
-    if (activeDB === "pixel") {
-        pixelBtn.classList.remove("btn-outline-success");
-        pixelBtn.classList.add("btn-success");
-        pixelBtn.innerText = "PixelMetrics Database Loaded";
-        digitalBtn.classList.remove("btn-success");
-        digitalBtn.classList.add("btn-outline-success");
-        digitalBtn.innerText = "Load Digital Evidence Database";
-    }
-    if (activeDB === "digital") {
-        digitalBtn.classList.remove("btn-outline-success");
-        digitalBtn.classList.add("btn-success");
-        digitalBtn.innerText = "Digital Evidence Database Loaded";
-        pixelBtn.classList.remove("btn-success");
-        pixelBtn.classList.add("btn-outline-success");
-        pixelBtn.innerText = "Load PixelMetrics Database";
+        panel.innerHTML = `<div class="feedback-text">${feedback.replace(/\n/g, '<br>')}</div>`;
+    } catch(e) {
+        panel.innerHTML = '<span style="color:#f87171;font-size:12.5px;">❌ Review failed. Try again.</span>';
     }
 }
 </script>
