@@ -64,57 +64,32 @@
         .nav-cta a { color: var(--green); font-weight: 700; text-decoration: none; white-space: nowrap; }
         .nav-cta a:hover { text-decoration: underline; }
 
-        /* HERO */
-        .hero {
+        /* CONTEXT BAR */
+        .context-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px; flex-wrap: wrap;
+            padding: 8px 1.5rem;
             background: var(--navy-mid); border-bottom: 1px solid var(--border);
-            padding: 1.4rem 1.75rem;
-            display: flex; align-items: flex-start; justify-content: space-between;
-            gap: 1.5rem; flex-wrap: wrap;
         }
-        .hero-left { flex: 1; min-width: 260px; }
-        .hero-eyebrow {
-            display: inline-flex; align-items: center; gap: 7px;
-            font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-            color: var(--green); background: var(--green-dim);
-            border: 1px solid rgba(6,192,21,0.2); border-radius: 4px;
-            padding: 3px 10px; margin-bottom: 0.55rem;
-        }
-        .hero h1 { font-size: 1.4rem; font-weight: 700; color: var(--text-pri); line-height: 1.3; margin-bottom: 0.45rem; }
-        .hero-sub { font-size: 13px; color: var(--text-sec); line-height: 1.65; max-width: 560px; }
-        .hero-sub a { color: var(--green); text-decoration: none; font-weight: 600; }
-        .hero-sub a:hover { text-decoration: underline; }
-        .hero-cards { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
-        .hero-card {
-            background: var(--navy-card); border: 1px solid var(--border-md);
-            border-radius: 10px; padding: 13px 15px; width: 180px; flex-shrink: 0;
-        }
-        .hero-card-icon { font-size: 1.2rem; margin-bottom: 5px; }
-        .hero-card-title { font-size: 12px; font-weight: 700; color: var(--text-pri); margin-bottom: 4px; }
-        .hero-card-desc { font-size: 11.5px; color: var(--text-sec); line-height: 1.55; }
-
-        /* LIL BANNER */
-        .lil-banner {
-            background: #0a1929; border-bottom: 1px solid var(--border);
-            padding: 12px 1.75rem;
-            display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-        }
+        .context-bar-left { display: flex; align-items: center; gap: 10px; }
         .lil-pill {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: #0077b5; border-radius: 5px; padding: 4px 10px;
-            font-size: 11px; font-weight: 700; color: #fff;
+            display: inline-flex; align-items: center;
+            background: #0077b5; border-radius: 4px; padding: 3px 9px;
+            font-size: 10.5px; font-weight: 700; color: #fff;
             letter-spacing: 0.04em; white-space: nowrap; flex-shrink: 0;
         }
-        .lil-text { font-size: 12.5px; color: var(--text-sec); flex: 1; }
-        .lil-text strong { color: var(--text-pri); }
-        .lil-links { display: flex; gap: 8px; flex-wrap: wrap; }
-        .lil-link {
-            font-size: 12px; font-weight: 600; color: var(--green); text-decoration: none;
-            padding: 5px 12px; border: 1px solid rgba(6,192,21,0.3);
-            border-radius: 6px; white-space: nowrap; transition: all 0.15s;
+        .context-course { font-size: 12.5px; color: var(--text-sec); }
+        .context-course a { color: var(--text-pri); font-weight: 600; text-decoration: none; }
+        .context-course a:hover { color: var(--green); }
+        .context-bar-links { display: flex; gap: 7px; align-items: center; }
+        .ctx-link {
+            font-size: 11.5px; font-weight: 600; color: var(--green); text-decoration: none;
+            padding: 4px 11px; border: 1px solid rgba(6,192,21,0.3);
+            border-radius: 5px; white-space: nowrap; transition: all 0.15s;
         }
-        .lil-link:hover { background: var(--green-dim); }
-        .lil-link.sec { color: var(--text-sec); border-color: var(--border-md); }
-        .lil-link.sec:hover { color: var(--text-pri); background: var(--navy-card); }
+        .ctx-link:hover { background: var(--green-dim); }
+        .ctx-link.sec { color: var(--text-dim); border-color: var(--border); }
+        .ctx-link.sec:hover { color: var(--text-sec); border-color: var(--border-md); background: var(--navy-card); }
 
         /* APP SHELL */
         .app-shell {
@@ -280,15 +255,7 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* QUERY COUNTER */
-        #queryCounterBar {
-            display: none; position: fixed; bottom: 0; left: 0; right: 0;
-            background: var(--navy-card); border-top: 1px solid rgba(6,192,21,0.3);
-            padding: 10px 1.5rem; z-index: 8888;
-            align-items: center; justify-content: center; gap: 8px;
-            font-size: 12.5px; color: var(--text-sec);
-        }
-        #queryCounterBar strong { color: var(--green); }
+
 
         /* EMAIL GATE */
         #emailGateOverlay {
@@ -403,45 +370,15 @@
     </div>
 </nav>
 
-<!-- HERO -->
-<div class="hero">
-    <div class="hero-left">
-        <div class="hero-eyebrow">🎓 Official LinkedIn Learning Companion</div>
-        <h1>WSDA SQL Editor</h1>
-        <p class="hero-sub">
-            The free, AI-powered practice environment built for Walter's LinkedIn Learning course
-            <a href="https://www.linkedin.com/learning/data-analysis-investigate-with-sql" target="_blank">Data Analysis: Investigate with SQL</a>.
-            Write real queries against the exact databases from the course, get instant AI feedback, and build the muscle memory that turns SQL from a skill into a reflex.
-        </p>
+<!-- CONTEXT BAR -->
+<div class="context-bar">
+    <div class="context-bar-left">
+        <div class="lil-pill">in LinkedIn Learning</div>
+        <div class="context-course">Official companion to <a href="https://www.linkedin.com/learning/data-analysis-investigate-with-sql" target="_blank">Data Analysis: Investigate with SQL</a> · 500K+ learners · 4.8 ★</div>
     </div>
-    <div class="hero-cards">
-        <div class="hero-card">
-            <div class="hero-card-icon">🗄️</div>
-            <div class="hero-card-title">Course Databases</div>
-            <div class="hero-card-desc">PixelMetrics — the exact database from Walter's course. Digital Evidence for forensic SQL. Or upload your own .db file.</div>
-        </div>
-        <div class="hero-card">
-            <div class="hero-card-icon">🤖</div>
-            <div class="hero-card-title">Walter AI Feedback</div>
-            <div class="hero-card-desc">Write a query, click Review. Instant feedback on correctness, style, and what to improve — in Walter's voice.</div>
-        </div>
-        <div class="hero-card">
-            <div class="hero-card-icon">📤</div>
-            <div class="hero-card-title">Export Your Work</div>
-            <div class="hero-card-desc">Download SQL as .sql or results as .csv. Build a portfolio of your work as you progress through the course.</div>
-        </div>
-    </div>
-</div>
-
-<!-- LINKEDIN LEARNING BANNER -->
-<div class="lil-banner">
-    <div class="lil-pill">in LinkedIn Learning</div>
-    <div class="lil-text">
-        Official companion to <strong>Data Analysis: Investigate with SQL</strong> — Walter's course with <strong>500K+ learners</strong> and a 4.8-star rating.
-    </div>
-    <div class="lil-links">
-        <a class="lil-link" href="https://www.linkedin.com/learning/data-analysis-investigate-with-sql" target="_blank">View Course →</a>
-        <a class="lil-link sec" href="https://www.linkedin.com/learning/instructors/walter-shields" target="_blank">All Courses by Walter</a>
+    <div class="context-bar-links">
+        <a class="ctx-link" href="https://www.linkedin.com/learning/data-analysis-investigate-with-sql" target="_blank">View Course →</a>
+        <a class="ctx-link sec" href="https://www.linkedin.com/learning/instructors/walter-shields" target="_blank">All Walter's Courses</a>
     </div>
 </div>
 
@@ -449,20 +386,20 @@
 <div id="emailGateOverlay">
     <div id="emailGateModal">
         <div id="gateFormContent">
-            <div class="gate-eyebrow">You've been learning with Walter 👋</div>
-            <h2>Keep the conversation going — save your progress and stay connected.</h2>
-            <p class="gate-sub">Enter your name and email to <strong>save your queries</strong> and join Walter's learner community. You'll also get early access to <strong>PVC Practitioner</strong> — his new tool for data professionals working alongside AI.</p>
+            <div class="gate-eyebrow">Free SQL practice tool 👋</div>
+            <h2>This editor is free. One thing gets you in — your email.</h2>
+            <p class="gate-sub">Enter your name and email to access the editor and <strong>join Walter's learner community</strong> — 11,000+ data professionals getting better at their craft alongside AI.</p>
             <div class="gate-benefit">
                 <span class="benefit-icon">🚀</span>
-                <span>The <strong>PVC Framework</strong> — Prompt, Validate, Communicate. The new standard for how data analysts work with AI without losing accuracy, trust, or their value to an organization.</span>
+                <span>You'll also get early access to <strong>PVC Practitioner</strong> — Walter's tool for analysts who want to work with AI without losing accuracy, trust, or their edge.</span>
             </div>
             <div class="gate-form">
                 <input type="text" id="gateFirstName" placeholder="First name" autocomplete="given-name">
                 <input type="email" id="gateEmail" placeholder="Work or personal email" autocomplete="email">
                 <div id="gateError">Please enter a valid name and email.</div>
-                <button class="gate-submit" id="gateSubmitBtn" onclick="submitEmailGate()">Save my progress and continue →</button>
+                <button class="gate-submit" id="gateSubmitBtn" onclick="submitEmailGate()">Get access →</button>
             </div>
-            <div class="gate-privacy">No spam. This is how Walter stays in touch with learners. Unsubscribe anytime.</div>
+            <div class="gate-privacy">No spam. Walter reads every reply. Unsubscribe anytime.</div>
         </div>
         <div class="gate-success" id="gateSuccessContent">
             <div class="success-icon">✅</div>
@@ -470,11 +407,6 @@
             <p>Progress saved. Keep querying — the editor is all yours.</p>
         </div>
     </div>
-</div>
-
-<!-- QUERY COUNTER BAR -->
-<div id="queryCounterBar">
-    <span>You have <strong id="queriesLeft">2</strong> free queries remaining — save your progress to keep going.</span>
 </div>
 
 <!-- APP SHELL -->
@@ -625,11 +557,9 @@ window.onload = async function() {
 
     // Set app shell height dynamically
     function setShellHeight() {
-        const nav  = document.querySelector('.nav').offsetHeight;
-        const hero = document.querySelector('.hero').offsetHeight;
-        const lil  = document.querySelector('.lil-banner').offsetHeight;
-        const vh   = window.innerHeight;
-        const h    = Math.max(400, vh - nav - hero - lil);
+        const nav = document.querySelector('.nav').offsetHeight;
+        const bar = document.querySelector('.context-bar').offsetHeight;
+        const h   = Math.max(400, window.innerHeight - nav - bar);
         document.getElementById('appShell').style.height = h + 'px';
     }
     setShellHeight();
@@ -638,8 +568,7 @@ window.onload = async function() {
     initSplitPane();
     updateDatabaseButtons('pixel');
     refreshSchema();
-    updateQueryCounter();
-    if (queryRunCount >= 3 && shouldShowGate()) setTimeout(showEmailGate, 500);
+    if (shouldShowGate()) setTimeout(showEmailGate, 800);
 };
 
 // SPLIT PANE
@@ -692,18 +621,10 @@ function shouldShowGate() { return localStorage.getItem('wsda_email_captured') !
 function showEmailGate() {
     if (!shouldShowGate()) return;
     gateShown = true;
-    document.getElementById('queryCounterBar').style.display = 'none';
     document.getElementById('emailGateOverlay').classList.add('active');
     setTimeout(() => document.getElementById('gateFirstName').focus(), 300);
 }
-function updateQueryCounter() {
-    if (localStorage.getItem('wsda_email_captured') === 'true') return;
-    const remaining = Math.max(0, 3 - queryRunCount);
-    if (queryRunCount > 0 && queryRunCount < 3) {
-        document.getElementById('queryCounterBar').style.display = 'flex';
-        document.getElementById('queriesLeft').textContent = remaining;
-    }
-}
+
 async function submitEmailGate() {
     const firstName = document.getElementById('gateFirstName').value.trim();
     const email     = document.getElementById('gateEmail').value.trim();
@@ -747,8 +668,6 @@ function runQuery() {
     }
     refreshSchema(); queryRunCount++;
     sessionStorage.setItem('wsda_query_count', queryRunCount);
-    updateQueryCounter();
-    if (queryRunCount === 3) setTimeout(showEmailGate, 800);
 }
 function generateTableHtml(r) {
     let h = '<table class="result-table"><thead><tr>' + r.columns.map(c => `<th>${c}</th>`).join('') + '</tr></thead><tbody>';
