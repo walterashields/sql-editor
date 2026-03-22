@@ -46,12 +46,13 @@
         /* NAV */
         .nav {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 1.5rem; height: 68px;
+            padding: 0 1.5rem; height: 80px;
             background: var(--navy); border-bottom: 1px solid var(--border);
             position: sticky; top: 0; z-index: 200;
         }
+        .nav-logo a { display: flex; align-items: center; text-decoration: none; }
         .nav-logo img {
-            height: 56px; display: block;
+            height: 72px; display: block;
             filter: brightness(0) invert(1);
         }
         .nav-cta {
@@ -363,7 +364,7 @@
 
 <!-- NAV -->
 <nav class="nav">
-    <div class="nav-logo"><img src="wsda-logo.png" alt="WSDA Learning"></div>
+    <div class="nav-logo"><a href="https://www.wsdalearning.ai/" target="_blank"><img src="wsda-logo.png" alt="WSDA Learning"></a></div>
     <div class="nav-cta">
         <span>Now enrolling: <strong>AI-Enabled Data Analyst</strong></span>
         <a href="https://www.wsdalearning.ai" target="_blank">Enroll Now →</a>
