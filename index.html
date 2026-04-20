@@ -653,15 +653,14 @@ function showGateSuccess(n) {
 // QUERY
 function runQuery() {
     const selection = editor.getSelection().trim();
-    const raw = selection || editor.getValue().trim();
-    if (!raw) return;
-    // Normalize: remove trailing semicolons then add one — makes ; optional for user
-    const q = raw.replace(/;+$/, '') + ';';
+    const q = selection || editor.getValue().trim();
+    if (!q) return;
     try {
         const r = db.exec(q);
         if (r.length > 0) {
-            const rows = r[0].values.length;
-            document.getElementById('resultArea').innerHTML = generateTableHtml(r[0]);
+            const last = r[r.length - 1]; // SQLite native: last statement wins
+            const rows = last.values.length;
+            document.getElementById('resultArea').innerHTML = generateTableHtml(last);
             document.getElementById('rowCount').textContent = rows + ' row' + (rows !== 1 ? 's' : '');
         } else {
             document.getElementById('resultArea').innerHTML = '<span class="result-empty">Query ran — no rows returned.</span>';
