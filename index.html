@@ -386,10 +386,10 @@
 <div class="context-bar">
     <div class="context-bar-left">
         <div class="lil-pill">in LinkedIn Learning</div>
-        <div class="context-course">Official companion to <a href="https://www.linkedin.com/learning/sql-essential-training-3" target="_blank">SQL Essential Training</a> · 500K+ learners · 4.8 ★</div>
+        <div class="context-course">Official companion to <a href="https://www.linkedin.com/learning/sql-essential-training-20685933" target="_blank">SQL Essential Training</a> · 500K+ learners · 4.8 ★</div>
     </div>
     <div class="context-bar-links">
-        <a class="ctx-link" href="https://www.linkedin.com/learning/sql-essential-training-3" target="_blank">Open Course →</a>
+        <a class="ctx-link" href="https://www.linkedin.com/learning/sql-essential-training-20685933" target="_blank">Open Course →</a>
         <a class="ctx-link sec" href="https://www.linkedin.com/learning/instructors/walter-shields" target="_blank">All Courses</a>
     </div>
 </div>
@@ -789,7 +789,7 @@ async function reviewQuery() {
         const res = await fetch('https://wsdalearning-sqleditor-proxy.walterashields.workers.dev/sqleditor/v1/chat/completions', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ model: 'gpt-3.5-turbo', messages: [
-                { role: 'system', content: 'You are Walter, a warm and experienced SQL instructor reviewing a learner\'s query. Give helpful, encouraging feedback — cover correctness, style, and one clear improvement tip. Under 150 words. Plain text only, no markdown headers or bullet symbols. Important: do NOT suggest adding semicolons — they are optional in this editor and the learner\'s choice to include or omit them is always correct.' },
+                { role: 'system', content: 'You are Walter, a seasoned SQL instructor. Review the learner\'s query honestly and specifically — respond to exactly what they wrote, not a generic checklist. If the query is correct and well-written, say so clearly and briefly — do not invent improvements. If there is a real issue (wrong syntax, logic error, inefficiency, missing clause), explain it plainly and show how to fix it. If there is one genuinely useful tip that applies to this specific query, share it — otherwise skip it. Never suggest adding comments, aliases, or semicolons unless they are directly relevant to a real problem in the query. Tone: direct, warm, never padded. Under 120 words. Plain text only, no bullet points or headers.' },
                 { role: 'user', content: `Schema:\n${schema}\n\nQuery:\n${q}\n\nPlease review.` }
             ], temperature: 0.4 })
         });
