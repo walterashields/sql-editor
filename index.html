@@ -188,12 +188,24 @@
         .result-empty { color: var(--text-dim); font-size: 12.5px; font-style: italic; }
         .result-error { color: #f87171; font-size: 12px; font-family: var(--mono); line-height: 1.6; }
         .result-table { border-collapse: collapse; width: 100%; font-size: 12px; font-family: var(--mono); }
+        .result-table { table-layout: fixed; }
         .result-table th {
             text-align: left; padding: 5px 12px; background: var(--navy-card); color: var(--text-sec);
             font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
             border-bottom: 1px solid var(--border); white-space: nowrap;
+            position: sticky; top: 0; z-index: 10;
+            overflow: hidden; min-width: 60px;
+            user-select: none;
         }
-        .result-table td { padding: 5px 12px; border-bottom: 1px solid var(--border); color: var(--text-pri); white-space: nowrap; }
+        /* Column resize handle */
+        .col-resizer {
+            position: absolute; right: 0; top: 0; bottom: 0;
+            width: 5px; cursor: col-resize;
+            background: transparent;
+        }
+        .col-resizer:hover, .col-resizer.resizing { background: var(--green); opacity: 0.5; }
+        .result-table th { position: sticky; top: 0; z-index: 10; }
+        .result-table td { padding: 5px 12px; border-bottom: 1px solid var(--border); color: var(--text-pri); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .result-table tr:hover td { background: var(--navy-card); }
 
         /* CODEMIRROR */
@@ -662,6 +674,7 @@ function runQuery() {
             const rows = last.values.length;
             document.getElementById('resultArea').innerHTML = generateTableHtml(last);
             document.getElementById('rowCount').textContent = rows + ' row' + (rows !== 1 ? 's' : '');
+            initColumnResize();
         } else {
             document.getElementById('resultArea').innerHTML = '<span class="result-empty">Query ran — no rows returned.</span>';
             document.getElementById('rowCount').textContent = '';
@@ -674,9 +687,41 @@ function runQuery() {
     sessionStorage.setItem('wsda_query_count', queryRunCount);
 }
 function generateTableHtml(r) {
-    let h = '<table class="result-table"><thead><tr>' + r.columns.map(c => `<th>${c}</th>`).join('') + '</tr></thead><tbody>';
+    const colWidth = 140;
+    let h = '<table class="result-table" style="width:max-content;min-width:100%;"><thead><tr>';
+    h += r.columns.map(c => `<th style="width:${colWidth}px;position:relative;">${c}<div class="col-resizer"></div></th>`).join('');
+    h += '</tr></thead><tbody>';
     r.values.forEach(row => { h += '<tr>' + row.map(v => `<td>${v === null ? '<span style="color:var(--text-dim);font-style:italic">NULL</span>' : v}</td>`).join('') + '</tr>'; });
-    return h + '</tbody></table>';
+    h += '</tbody></table>';
+    return h;
+}
+
+function initColumnResize() {
+    const table = document.querySelector('.result-table');
+    if (!table) return;
+    table.querySelectorAll('.col-resizer').forEach(handle => {
+        let startX, startW, th;
+        handle.addEventListener('mousedown', e => {
+            th = handle.parentElement;
+            startX = e.pageX;
+            startW = th.offsetWidth;
+            handle.classList.add('resizing');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+
+            const onMove = e => { th.style.width = Math.max(60, startW + e.pageX - startX) + 'px'; };
+            const onUp   = () => {
+                handle.classList.remove('resizing');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+            };
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+            e.preventDefault();
+        });
+    });
 }
 
 // SCHEMA
@@ -745,7 +790,7 @@ async function reviewQuery() {
         const res = await fetch('https://wsdalearning-sqleditor-proxy.walterashields.workers.dev/sqleditor/v1/chat/completions', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ model: 'gpt-3.5-turbo', messages: [
-                { role: 'system', content: 'You are Walter, a warm and experienced SQL instructor reviewing a learner\'s query. Give helpful, encouraging feedback — cover correctness, style, and one clear improvement tip. Under 150 words. Plain text only, no markdown headers or bullet symbols.' },
+                { role: 'system', content: 'You are Walter, a warm and experienced SQL instructor reviewing a learner\'s query. Give helpful, encouraging feedback — cover correctness, style, and one clear improvement tip. Under 150 words. Plain text only, no markdown headers or bullet symbols. Important: do NOT suggest adding semicolons — they are optional in this editor and the learner\'s choice to include or omit them is always correct.' },
                 { role: 'user', content: `Schema:\n${schema}\n\nQuery:\n${q}\n\nPlease review.` }
             ], temperature: 0.4 })
         });
