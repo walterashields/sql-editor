@@ -375,11 +375,11 @@
 <div class="context-bar">
     <div class="context-bar-left">
         <div class="lil-pill">in LinkedIn Learning</div>
-        <div class="context-course">Official companion to <a href="https://www.linkedin.com/learning/data-analysis-investigate-with-sql" target="_blank">Data Analysis: Investigate with SQL</a> · 500K+ learners · 4.8 ★</div>
+        <div class="context-course">Official companion to <a href="https://www.linkedin.com/learning/sql-essential-training-3" target="_blank">SQL Essential Training</a> · 500K+ learners · 4.8 ★</div>
     </div>
     <div class="context-bar-links">
-        <a class="ctx-link" href="https://www.linkedin.com/learning/data-analysis-investigate-with-sql" target="_blank">View Course →</a>
-        <a class="ctx-link sec" href="https://www.linkedin.com/learning/instructors/walter-shields" target="_blank">All Walter's Courses</a>
+        <a class="ctx-link" href="https://www.linkedin.com/learning/sql-essential-training-3" target="_blank">Open Course →</a>
+        <a class="ctx-link sec" href="https://www.linkedin.com/learning/instructors/walter-shields" target="_blank">All Courses</a>
     </div>
 </div>
 
@@ -652,7 +652,9 @@ function showGateSuccess(n) {
 
 // QUERY
 function runQuery() {
-    const q = editor.getValue().trim(); if (!q) return;
+    const selection = editor.getSelection().trim();
+    const q = selection || editor.getValue().trim();
+    if (!q) return;
     try {
         const r = db.exec(q);
         if (r.length > 0) {
@@ -723,7 +725,7 @@ function updateDatabaseButtons(a) {
 }
 
 // EXPORT
-function exportQuery() { const q = editor.getValue().trim(); if (!q) { alert('No query.'); return; } dlBlob(q, 'query.sql', 'text/plain'); }
+function exportQuery() { const q = (editor.getSelection().trim() || editor.getValue().trim()); if (!q) { alert('No query.'); return; } dlBlob(q, 'query.sql', 'text/plain'); }
 function exportResults() {
     const t = document.querySelector('.result-table'); if (!t) { alert('No results.'); return; }
     let csv = ''; t.querySelectorAll('tr').forEach(r => { csv += Array.from(r.querySelectorAll('th,td')).map(c => `"${c.textContent.replace(/"/g,'""')}"`).join(',') + '\n'; });
