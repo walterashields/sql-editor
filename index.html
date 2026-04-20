@@ -653,8 +653,10 @@ function showGateSuccess(n) {
 // QUERY
 function runQuery() {
     const selection = editor.getSelection().trim();
-    const q = selection || editor.getValue().trim();
-    if (!q) return;
+    const raw = selection || editor.getValue().trim();
+    if (!raw) return;
+    // Normalize: remove trailing semicolons then add one — makes ; optional for user
+    const q = raw.replace(/;+$/, '') + ';';
     try {
         const r = db.exec(q);
         if (r.length > 0) {
