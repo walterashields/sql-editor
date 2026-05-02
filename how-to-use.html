@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Use the AI SQL Editor — WSDA Learning</title>
+<meta name="description" content="Step-by-step guide to using the WSDA AI SQL Editor. Practice SQL against real databases with live AI feedback. Free from Walter Shields Data Academy.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+:root {
+  --green:      #A6D047;
+  --green-d:    #92B73F;
+  --green-deep: #7d9e35;
+  --cream:      #ECEDE3;
+  --navy:       #0B171D;
+  --navy-2:     #16232f;
+  --navy-3:     #1c2e3d;
+  --teal:       #003F48;
+  --white:      #ffffff;
+  --text-h:     #182334;
+  --text-b:     #464f5d;
+  --text-mu:    #8a9bb0;
+  --heading:    'Bebas Neue', sans-serif;
+  --body:       'Work Sans', system-ui, sans-serif;
+  --max:        1100px;
+  --pad:        clamp(24px, 5vw, 64px);
+}
+body { font-family: var(--body); background: var(--cream); color: var(--text-b); -webkit-font-smoothing: antialiased; }
+
+/* NAV */
+.nav { position: sticky; top: 0; z-index: 200; display: flex; align-items: center; justify-content: space-between; padding: 0 var(--pad); height: 68px; background: var(--navy); border-bottom: 1px solid rgba(255,255,255,.06); }
+.nav-logo { font-family: var(--heading); font-size: 22px; letter-spacing: .04em; color: var(--white); text-decoration: none; }
+.nav-logo span { color: var(--green); }
+.nav-back { font-family: var(--body); font-size: 13px; font-weight: 500; color: rgba(255,255,255,.45); text-decoration: none; display: flex; align-items: center; gap: 6px; transition: color .15s; }
+.nav-back:hover { color: var(--green); }
+.nav-cta { background: var(--green); color: var(--navy); font-family: var(--body); font-size: 13px; font-weight: 700; padding: 8px 20px; border-radius: 6px; text-decoration: none; transition: background .15s; white-space: nowrap; }
+.nav-cta:hover { background: var(--green-d); }
+
+/* HERO */
+.hero { background: linear-gradient(120deg, var(--navy) 0%, var(--teal) 60%, #1a4a1a 100%); padding: 64px var(--pad) 72px; position: relative; overflow: hidden; }
+.hero::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 80% 50%, rgba(166,208,71,.08) 0%, transparent 70%); pointer-events: none; }
+.hero-inner { max-width: var(--max); margin: 0 auto; position: relative; z-index: 1; }
+.hero-pill { display: inline-flex; align-items: center; gap: 8px; background: rgba(166,208,71,.12); border: 1px solid rgba(166,208,71,.25); border-radius: 4px; padding: 4px 12px; margin-bottom: 20px; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--green); }
+.hero h1 { font-family: var(--heading); font-size: clamp(48px, 6vw, 80px); color: var(--white); line-height: .95; margin-bottom: 16px; letter-spacing: .02em; }
+.hero h1 span { color: var(--green); }
+.hero-sub { font-size: 17px; font-weight: 300; line-height: 1.7; color: rgba(255,255,255,.6); max-width: 620px; margin-bottom: 28px; }
+.hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--green); color: var(--navy); font-family: var(--body); font-size: 14px; font-weight: 700; padding: 12px 24px; border-radius: 8px; text-decoration: none; transition: background .15s; }
+.btn-primary:hover { background: var(--green-d); }
+.btn-ghost { display: inline-flex; align-items: center; gap: 8px; background: transparent; border: 1.5px solid rgba(255,255,255,.2); color: rgba(255,255,255,.7); font-family: var(--body); font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 8px; text-decoration: none; transition: all .15s; }
+.btn-ghost:hover { border-color: var(--green); color: var(--green); }
+
+/* STEPS */
+.steps-section { padding: 80px var(--pad); background: var(--white); }
+.steps-inner { max-width: var(--max); margin: 0 auto; }
+.section-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--green-d); margin-bottom: 10px; }
+.section-title { font-family: var(--heading); font-size: clamp(36px, 4vw, 52px); color: var(--text-h); line-height: .95; margin-bottom: 12px; letter-spacing: .02em; }
+.section-sub { font-size: 16px; font-weight: 300; color: var(--text-b); line-height: 1.7; max-width: 580px; margin-bottom: 56px; }
+.steps-list { display: flex; flex-direction: column; gap: 0; }
+.step-item { display: grid; grid-template-columns: 80px 1fr; gap: 32px; align-items: start; padding: 40px 0; border-bottom: 1px solid rgba(0,0,0,.07); }
+.step-item:last-child { border-bottom: none; }
+.step-num-big { font-family: var(--heading); font-size: 72px; color: var(--green); line-height: 1; opacity: .25; }
+.step-body h3 { font-family: var(--body); font-size: 20px; font-weight: 700; color: var(--text-h); margin-bottom: 10px; }
+.step-body p { font-size: 15px; font-weight: 400; color: var(--text-b); line-height: 1.75; margin-bottom: 12px; }
+.step-tip { display: inline-flex; align-items: center; gap: 8px; background: rgba(166,208,71,.1); border: 1px solid rgba(166,208,71,.2); border-radius: 6px; padding: 8px 14px; font-size: 13px; font-weight: 500; color: var(--green-deep); }
+.step-tip-icon { font-size: 14px; }
+.step-kbd { display: inline-flex; align-items: center; gap: 4px; background: var(--navy); color: var(--green); font-family: monospace; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 4px; }
+
+/* INTERFACE GUIDE */
+.interface-section { padding: 80px var(--pad); background: var(--cream); }
+.interface-inner { max-width: var(--max); margin: 0 auto; }
+.interface-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 48px; }
+.interface-card { background: var(--white); border-radius: 12px; padding: 28px 24px; }
+.interface-icon { font-size: 28px; margin-bottom: 14px; }
+.interface-card h3 { font-size: 16px; font-weight: 700; color: var(--text-h); margin-bottom: 8px; }
+.interface-card p { font-size: 14px; color: var(--text-b); line-height: 1.7; }
+
+/* FAQ */
+.faq-section { padding: 80px var(--pad); background: var(--white); }
+.faq-inner { max-width: 740px; margin: 0 auto; }
+.faq-list { margin-top: 48px; display: flex; flex-direction: column; gap: 0; }
+.faq-item { border-bottom: 1px solid rgba(0,0,0,.08); padding: 24px 0; }
+.faq-item:first-child { border-top: 1px solid rgba(0,0,0,.08); }
+.faq-q { font-size: 16px; font-weight: 600; color: var(--text-h); margin-bottom: 10px; }
+.faq-a { font-size: 14px; font-weight: 400; color: var(--text-b); line-height: 1.75; }
+
+/* CTA */
+.cta-band { background: var(--navy); padding: 72px var(--pad); text-align: center; }
+.cta-inner { max-width: 600px; margin: 0 auto; }
+.cta-inner h2 { font-family: var(--heading); font-size: clamp(36px, 4vw, 52px); color: var(--white); margin-bottom: 14px; letter-spacing: .02em; line-height: .95; }
+.cta-inner p { font-size: 16px; font-weight: 300; color: rgba(255,255,255,.55); margin-bottom: 32px; line-height: 1.65; }
+.cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* FOOTER */
+.site-footer { background: var(--navy); border-top: 1px solid rgba(255,255,255,.06); padding: 40px var(--pad) 28px; }
+.footer-inner { max-width: var(--max); margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+.footer-logo { font-family: var(--heading); font-size: 20px; color: rgba(255,255,255,.3); letter-spacing: .04em; }
+.footer-logo span { color: rgba(166,208,71,.4); }
+.footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+.footer-links a { font-size: 12px; color: rgba(255,255,255,.3); text-decoration: none; transition: color .15s; }
+.footer-links a:hover { color: var(--green); }
+.footer-copy { font-size: 11px; color: rgba(255,255,255,.2); width: 100%; }
+
+@media (max-width: 900px) {
+  .interface-grid { grid-template-columns: 1fr; }
+  .step-item { grid-template-columns: 48px 1fr; gap: 20px; }
+  .step-num-big { font-size: 48px; }
+  .hero-btns { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="https://www.wsdalearning.ai/">WSDA <span>Learning</span></a>
+  <a class="nav-back" href="https://sqleditor.wsdalearning.ai/">← Back to Tool</a>
+  <a class="nav-cta" href="https://sqleditor.wsdalearning.ai/" target="_blank">Open Editor →</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-pill">How to Use · AI SQL Editor</div>
+    <h1>Get the Most Out of<br>the <span>AI SQL Editor</span></h1>
+    <p class="hero-sub">A complete guide to writing queries, getting AI feedback, and using every feature of the free WSDA SQL Editor.</p>
+    <div class="hero-btns">
+      <a class="btn-primary" href="https://sqleditor.wsdalearning.ai/" target="_blank">Open the Editor →</a>
+      <a class="btn-ghost" href="https://www.wsdalearning.ai/" target="_blank">Explore All Tools</a>
+    </div>
+  </div>
+</section>
+
+<section class="steps-section">
+  <div class="steps-inner">
+    <div class="section-eyebrow">Step by step</div>
+    <div class="section-title">How to Use the Editor</div>
+    <p class="section-sub">No installation, no account. Open the URL and you are already inside the editor. Here is everything you need to get started.</p>
+    <div class="steps-list">
+      <div class="step-item">
+        <div class="step-num-big">01</div>
+        <div class="step-body">
+          <h3>Choose a database from the sidebar</h3>
+          <p>On the left side of the editor you will see two built-in databases. Click <strong>PixelMetrics</strong> to load a SaaS business analytics dataset — this is the same database used in Walter's LinkedIn Learning courses. Click <strong>Digital Evidence</strong} to load a more complex forensic investigation dataset for advanced practice.</p>
+          <p>You can also upload your own <code>.sqlite</code> or <code>.db</code> file by clicking the upload button in the sidebar. Your file stays local — it never leaves your browser.</p>
+          <div class="step-tip"><span class="step-tip-icon">💡</span> If you are following Walter's LinkedIn Learning course, start with PixelMetrics — it matches the course exactly.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num-big">02</div>
+        <div class="step-body">
+          <h3>Explore the schema before writing</h3>
+          <p>Click any table name in the Schema Explorer to expand its columns and data types. This shows you what you are working with before writing a single line of SQL. Understanding the schema first is a habit senior analysts develop early — this makes it easy.</p>
+          <div class="step-tip"><span class="step-tip-icon">💡</span> Start with <code>SELECT * FROM table_name LIMIT 10;</code> to get a feel for the data before writing complex queries.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num-big">03</div>
+        <div class="step-body">
+          <h3>Write your query in the editor</h3>
+          <p>Type your SQL in the main editor panel. The editor supports syntax highlighting, line numbers, and full SQL — SELECT, JOIN, GROUP BY, subqueries, window functions, everything SQLite supports.</p>
+          <p>Run your query by clicking the <strong>Run</strong> button in the toolbar or using the keyboard shortcut.</p>
+          <div class="step-tip"><span class="step-tip-icon">⌨️</span> Keyboard shortcut: <span class="step-kbd">Ctrl + Enter</span> on Windows · <span class="step-kbd">Cmd + Enter</span> on Mac</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num-big">04</div>
+        <div class="step-body">
+          <h3>Review your results</h3>
+          <p>Results appear in the panel below the editor. Drag the divider between the editor and results panel to resize each section — give yourself more room for either the query or the output depending on what you need.</p>
+          <p>The row count appears in the top right of the results panel. If your query returns an error, the error message displays there with enough detail to diagnose what went wrong.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num-big">05</div>
+        <div class="step-body">
+          <h3>Click Review to get AI feedback</h3>
+          <p>After running your query, click the <strong>Review</strong> button. The AI reads your query and the full database schema, then returns three things: whether your query is correct, a note on style and readability, and one concrete improvement tip.</p>
+          <p>The feedback appears in the right panel. It is written in plain language — not jargon — and designed to teach, not just correct.</p>
+          <div class="step-tip"><span class="step-tip-icon">💡</span> Use Review even when your query works. Correct is the floor, not the ceiling — style and efficiency matter in real jobs.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num-big">06</div>
+        <div class="step-body">
+          <h3>Export your query or results</h3>
+          <p>Click <strong>↓ Query</strong> to download your SQL as a <code>.sql</code> file. Click <strong>↓ Results</strong> to download the output as a <code>.csv</code> file — ready for Excel, Tableau, or any other tool you use for further analysis.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="interface-section">
+  <div class="interface-inner">
+    <div class="section-eyebrow">Interface overview</div>
+    <div class="section-title">Know Your Workspace</div>
+    <div class="interface-grid">
+      <div class="interface-card">
+        <div class="interface-icon">🗂️</div>
+        <h3>Left Sidebar</h3>
+        <p>Database selector, file upload, and Schema Explorer. Click any table to expand its columns and data types. Always visible so you can reference structure while writing.</p>
+      </div>
+      <div class="interface-card">
+        <div class="interface-icon">✏️</div>
+        <h3>Editor Panel</h3>
+        <p>Main SQL writing area with syntax highlighting and line numbers. The Run and Review buttons live in the toolbar above. Drag the horizontal divider to resize the editor and results split.</p>
+      </div>
+      <div class="interface-card">
+        <div class="interface-icon">📋</div>
+        <h3>Results Panel</h3>
+        <p>Query output with row count. Displays tables, error messages, or a confirmation if your query ran successfully but returned no rows. CSV export button available here.</p>
+      </div>
+      <div class="interface-card">
+        <div class="interface-icon">🤖</div>
+        <h3>AI Feedback Panel</h3>
+        <p>Right column. Shows Walter AI's response after you click Review. Covers correctness, style, and one improvement tip per query. Stays visible so you can reference it while editing.</p>
+      </div>
+      <div class="interface-card">
+        <div class="interface-icon">⌨️</div>
+        <h3>Keyboard Shortcuts</h3>
+        <p><strong>Ctrl/Cmd + Enter</strong> runs your query. Everything else is clickable. No shortcuts to memorize — the toolbar has everything labeled.</p>
+      </div>
+      <div class="interface-card">
+        <div class="interface-icon">🔒</div>
+        <h3>Runs in Your Browser</h3>
+        <p>The SQL engine runs entirely client-side. Your queries, your data, and your results never leave your machine. No server, no account, no latency.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="faq-section">
+  <div class="faq-inner">
+    <div class="section-eyebrow">Common questions</div>
+    <div class="section-title">FAQ</div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q">Do I need to create an account to use the editor?</div>
+        <div class="faq-a">No. Open the URL and the editor loads immediately. You will be asked for your email to join the WSDA community, but you can click through directly to the tool without signing up.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">What version of SQL does the editor support?</div>
+        <div class="faq-a">The editor runs SQLite — which covers the vast majority of SQL used in data analyst roles. SELECT, JOINs, GROUP BY, HAVING, subqueries, CTEs, and window functions all work. Dialect-specific syntax from PostgreSQL or SQL Server may differ slightly.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Can I upload my own database?</div>
+        <div class="faq-a">Yes. Click the upload button in the sidebar and select any <code>.sqlite</code> or <code>.db</code> file from your computer. The file loads locally and never leaves your browser.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Is this connected to Walter's LinkedIn Learning course?</div>
+        <div class="faq-a">Yes. The PixelMetrics database is the exact dataset used in Walter's LinkedIn Learning SQL courses. If you are following along with the course, use PixelMetrics to practice the same queries covered in each module.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">How accurate is the AI feedback?</div>
+        <div class="faq-a">The AI reviews your query against the actual schema and evaluates correctness, style, and efficiency. It is accurate for standard SQL patterns. For highly complex queries, treat the feedback as one perspective — always test your query logic against expected results.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Is this tool free forever?</div>
+        <div class="faq-a">Yes. The AI SQL Editor is a free tool from Walter Shields Data Academy. There is no paid tier, no trial period, and no feature gating.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="cta-inner">
+    <h2>Ready to Write Your First Query?</h2>
+    <p>No setup. No account required. Open the editor and start practicing SQL against real business data in under 60 seconds.</p>
+    <div class="cta-btns">
+      <a class="btn-primary" href="https://sqleditor.wsdalearning.ai/" target="_blank">Open AI SQL Editor →</a>
+      <a class="btn-ghost" href="https://www.wsdalearning.ai/" target="_blank">Explore All Tools</a>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-logo">WSDA <span>Learning</span></div>
+    <div class="footer-links">
+      <a href="https://www.wsdalearning.ai/">All Tools</a>
+      <a href="https://pvc.wsdalearning.ai/">PVC Practitioner</a>
+      <a href="https://portfoliolab.wsdalearning.ai/">Portfolio Lab</a>
+      <a href="https://wsdalearning.ai/news" target="_blank">WSDA News</a>
+    </div>
+    <div class="footer-copy">© Walter Shields Data Academy · wsdalearning.ai</div>
+  </div>
+</footer>
+
+</body>
+</html>
