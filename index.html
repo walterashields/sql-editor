@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="description" content="The official companion tool for Walter Shields' LinkedIn Learning course. Practice SQL with live AI feedback.">
+    <meta property="og:title" content="WSDA SQL Editor — LinkedIn Learning Companion">
+    <meta property="og:description" content="Free SQL editor with AI-powered query feedback. The official practice tool for Data Analysis: Investigate with SQL on LinkedIn Learning.">
+    <meta property="og:image" content="https://wsdalearning.ai/assets/wsda-banner.png">
+    <meta property="og:url" content="https://sqleditor.wsdalearning.ai">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WSDA SQL Editor | LinkedIn Learning Companion</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/sql/sql.min.js"></script>
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+
+    <style>
+        :root {
+            --navy:       #0f1923;
+            --navy-mid:   #16232f;
+            --navy-card:  #1c2e3d;
+            --green:      #06c015;
+            --green-dim:  rgba(6,192,21,0.11);
+            --green-glow: rgba(6,192,21,0.22);
+            --border:     rgba(255,255,255,0.07);
+            --border-md:  rgba(255,255,255,0.13);
+            --text-pri:   #eef2f7;
+            --text-sec:   #8a9bb0;
+            --text-dim:   #4e6070;
+            --sans:       'DM Sans', system-ui, sans-serif;
+            --mono:       'DM Mono', 'Fira Code', monospace;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--navy); color: var(--text-pri);
+            font-family: var(--sans); font-size: 14px; line-height: 1.6;
+            -webkit-font-smoothing: antialiased; min-height: 100vh;
+        }
+
+        /* NAV */
+        .nav {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 1.5rem; height: 80px;
+            background: var(--navy); border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 200;
+        }
+        .nav-logo a { display: flex; align-items: center; text-decoration: none; }
+        .nav-logo img {
+            height: 72px; display: block;
+            filter: brightness(0) invert(1);
+        }
+        .nav-cta {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--navy-card); border: 1px solid var(--border-md);
+            border-radius: 8px; padding: 7px 14px;
+            font-size: 12.5px; color: var(--text-sec);
+        }
+        .nav-cta strong { color: var(--text-pri); font-weight: 600; }
+        .nav-cta a { color: var(--green); font-weight: 700; text-decoration: none; white-space: nowrap; }
+        .nav-cta a:hover { text-decoration: underline; }
+
+        /* CONTEXT BAR */
+        .context-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px; flex-wrap: wrap;
+            padding: 8px 1.5rem;
+            background: var(--navy-mid); border-bottom: 1px solid var(--border);
+        }
+        .context-bar-left { display: flex; align-items: center; gap: 10px; }
+        .lil-pill {
+            display: inline-flex; align-items: center;
+            background: #0077b5; border-radius: 4px; padding: 3px 9px;
+            font-size: 10.5px; font-weight: 700; color: #fff;
+            letter-spacing: 0.04em; white-space: nowrap; flex-shrink: 0;
+        }
+        .context-course { font-size: 12.5px; color: var(--text-sec); }
+        .context-course a { color: var(--text-pri); font-weight: 600; text-decoration: none; }
+        .context-course a:hover { color: var(--green); }
+        .context-bar-links { display: flex; gap: 7px; align-items: center; }
+        .ctx-link {
+            font-size: 11.5px; font-weight: 600; color: var(--green); text-decoration: none;
+            padding: 4px 11px; border: 1px solid rgba(6,192,21,0.3);
+            border-radius: 5px; white-space: nowrap; transition: all 0.15s;
+        }
+        .ctx-link:hover { background: var(--green-dim); }
+        .ctx-link.sec { color: var(--text-dim); border-color: var(--border); }
+        .ctx-link.sec:hover { color: var(--text-sec); border-color: var(--border-md); background: var(--navy-card); }
+
+        /* APP SHELL */
+        .app-shell {
+            display: grid;
+            grid-template-columns: 228px 1fr 272px;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            background: var(--navy-mid); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .sidebar-section { padding: 11px 13px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .sidebar-label {
+            font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--text-dim); margin-bottom: 7px;
+        }
+        .db-btn {
+            display: block; width: 100%; text-align: left;
+            background: var(--navy-card); border: 1px solid var(--border);
+            border-radius: 7px; padding: 7px 11px; color: var(--text-sec);
+            font-family: var(--sans); font-size: 12.5px; font-weight: 500;
+            cursor: pointer; margin-bottom: 5px; transition: all 0.15s;
+        }
+        .db-btn:hover { border-color: var(--border-md); color: var(--text-pri); }
+        .db-btn.active { background: var(--green-dim); border-color: var(--green); color: var(--green); font-weight: 600; }
+        .db-status { font-size: 11px; color: var(--text-dim); margin-top: 5px; }
+        .db-status span { color: var(--green); font-weight: 600; }
+        .upload-label {
+            display: flex; align-items: center; gap: 7px;
+            padding: 7px 10px; border: 1px dashed var(--border-md);
+            border-radius: 7px; color: var(--text-dim); font-size: 12px;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .upload-label:hover { border-color: var(--green); color: var(--green); }
+        #dbUpload { display: none; }
+        .schema-scroll { flex: 1; overflow-y: auto; padding: 11px 13px; }
+        .schema-scroll::-webkit-scrollbar { width: 3px; }
+        .schema-scroll::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 2px; }
+        .table-entry { margin-bottom: 2px; }
+        .table-toggle {
+            display: flex; align-items: center; gap: 6px; cursor: pointer;
+            padding: 5px 6px; border-radius: 5px; font-size: 12.5px; font-weight: 500;
+            color: var(--text-sec); transition: all 0.1s;
+        }
+        .table-toggle:hover { background: var(--navy-card); color: var(--text-pri); }
+        .caret { font-size: 8px; color: var(--text-dim); }
+        .column-list { padding-left: 18px; margin: 2px 0 3px; }
+        .column-item { font-size: 11px; color: var(--text-dim); padding: 1px 0; font-family: var(--mono); }
+        .col-type { opacity: 0.6; margin-left: 4px; }
+
+        /* EDITOR MAIN */
+        .editor-main {
+            display: flex; flex-direction: column; overflow: hidden; background: var(--navy);
+        }
+        .editor-toolbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 14px; border-bottom: 1px solid var(--border);
+            background: var(--navy-mid); flex-shrink: 0;
+        }
+        .toolbar-left { display: flex; align-items: center; gap: 6px; }
+        .toolbar-label {
+            font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--text-dim); margin-right: 6px;
+        }
+        .toolbar-hint { font-size: 10.5px; color: var(--text-dim); }
+
+        /* SPLIT PANE */
+        .split-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+        .editor-pane { overflow: hidden; min-height: 80px; }
+        .drag-handle {
+            height: 8px; background: var(--navy-mid);
+            border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+            cursor: ns-resize; display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; user-select: none; transition: background 0.15s; position: relative; z-index: 10;
+        }
+        .drag-handle:hover, .drag-handle.dragging { background: var(--green-dim); }
+        .drag-handle::before {
+            content: ''; display: block; width: 32px; height: 2px;
+            background: var(--border-md); border-radius: 1px;
+        }
+        .drag-handle:hover::before, .drag-handle.dragging::before { background: var(--green); }
+        .result-pane { display: flex; flex-direction: column; min-height: 60px; background: var(--navy-mid); overflow: hidden; }
+        .result-pane::-webkit-scrollbar { width: 4px; height: 4px; }
+        .result-pane::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 2px; }
+        .result-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 5px 14px; background: var(--navy-card); border-bottom: 1px solid var(--border);
+            font-size: 10px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+            color: var(--text-dim); flex-shrink: 0;
+        }
+        #rowCount { color: var(--green); font-size: 10px; }
+        .result-content { padding: 0; overflow: auto; flex: 1; }
+        .result-empty { color: var(--text-dim); font-size: 12.5px; font-style: italic; }
+        .result-error { color: #f87171; font-size: 12px; font-family: var(--mono); line-height: 1.6; }
+        .result-table { border-collapse: collapse; width: 100%; font-size: 12px; font-family: var(--mono); }
+        .result-table { table-layout: fixed; }
+        .result-table th {
+            text-align: left; padding: 5px 12px; background: var(--navy-card); color: var(--text-sec);
+            font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+            border-bottom: 1px solid var(--border); white-space: nowrap;
+            overflow: hidden; min-width: 60px;
+            user-select: none; position: relative;
+        }
+        /* Column resize handle */
+        .col-resizer {
+            position: absolute; right: 0; top: 0; bottom: 0;
+            width: 5px; cursor: col-resize;
+            background: transparent;
+        }
+        .col-resizer:hover, .col-resizer.resizing { background: var(--green); opacity: 0.5; }
+        .result-table thead { position: sticky; top: 0; z-index: 10; }
+        .result-table td { padding: 5px 12px; border-bottom: 1px solid var(--border); color: var(--text-pri); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .result-table tr:hover td { background: var(--navy-card); }
+
+        /* CODEMIRROR */
+        .CodeMirror {
+            height: 100% !important; background: var(--navy) !important; color: #c9d8e8 !important;
+            font-family: var(--mono) !important; font-size: 13px !important; line-height: 1.7 !important; border: none !important;
+        }
+        .CodeMirror-scroll { overflow-y: auto !important; overflow-x: auto !important; }
+        .CodeMirror-gutters { background: var(--navy-mid) !important; border-right: 1px solid var(--border) !important; }
+        .CodeMirror-linenumber { color: var(--text-dim) !important; font-size: 11px !important; }
+        .CodeMirror-cursor { border-left: 2px solid var(--green) !important; }
+        .CodeMirror-selected { background: rgba(6,192,21,0.1) !important; }
+        .cm-keyword { color: #7dd3fc !important; font-weight: 500 !important; }
+        .cm-string  { color: #86efac !important; }
+        .cm-number  { color: #fbbf24 !important; }
+        .cm-comment { color: var(--text-dim) !important; font-style: italic !important; }
+        .cm-operator { color: #c4b5fd !important; }
+
+        /* BUTTONS */
+        .btn {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-family: var(--sans); font-size: 12.5px; font-weight: 600;
+            padding: 6px 13px; border-radius: 6px; border: none; cursor: pointer;
+            transition: all 0.15s; white-space: nowrap;
+        }
+        .btn-primary { background: var(--green); color: #fff; }
+        .btn-primary:hover { background: #05a813; }
+        .btn-ghost { background: transparent; border: 1px solid var(--border-md); color: var(--text-sec); }
+        .btn-ghost:hover { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+
+        /* FEEDBACK COL */
+        .feedback-col {
+            background: var(--navy-mid); border-left: 1px solid var(--border);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .feedback-header {
+            padding: 10px 14px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+        }
+        .feedback-title { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); }
+        .ai-badge {
+            font-size: 10px; font-weight: 600; background: var(--green-dim); color: var(--green);
+            border: 1px solid rgba(6,192,21,0.25); border-radius: 4px; padding: 2px 7px; letter-spacing: 0.06em; text-transform: uppercase;
+        }
+        .feedback-body { flex: 1; overflow-y: auto; padding: 14px; font-size: 13px; line-height: 1.7; color: var(--text-sec); }
+        .feedback-body::-webkit-scrollbar { width: 3px; }
+        .feedback-body::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 2px; }
+        .feedback-empty { font-style: italic; color: var(--text-dim); font-size: 12.5px; }
+        .feedback-text strong { color: var(--text-pri); }
+        .feedback-footer { padding: 12px 14px; border-top: 1px solid var(--border); flex-shrink: 0; }
+        .pvc-callout { background: var(--navy-card); border: 1px solid var(--border-md); border-radius: 8px; padding: 12px 13px; }
+        .pvc-callout-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--green); margin-bottom: 4px; }
+        .pvc-callout p { font-size: 11.5px; color: var(--text-sec); line-height: 1.55; margin-bottom: 7px; }
+        .pvc-callout a { display: inline-block; font-size: 12px; font-weight: 600; color: var(--green); text-decoration: none; }
+        .pvc-callout a:hover { text-decoration: underline; }
+        .spinner {
+            display: inline-block; width: 13px; height: 13px;
+            border: 2px solid var(--border-md); border-top-color: var(--green);
+            border-radius: 50%; animation: spin 0.6s linear infinite; flex-shrink: 0;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+
+
+        /* EMAIL GATE */
+        #emailGateOverlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.75); backdrop-filter: blur(5px);
+            z-index: 9999; align-items: center; justify-content: center; padding: 1rem;
+        }
+        #emailGateOverlay.active { display: flex; }
+        #emailGateModal {
+            background: var(--navy-card); border: 1px solid var(--border-md); border-radius: 16px;
+            max-width: 460px; width: 100%; padding: 2rem;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(6,192,21,0.08);
+            animation: modalIn 0.25s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: translateY(14px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .gate-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--green); margin-bottom: 0.6rem; }
+        #emailGateModal h2 { font-size: 1.3rem; font-weight: 700; color: var(--text-pri); margin-bottom: 0.55rem; line-height: 1.35; }
+        .gate-sub { font-size: 13px; color: var(--text-sec); line-height: 1.65; margin-bottom: 1.2rem; }
+        .gate-sub strong { color: var(--text-pri); }
+        .gate-benefit {
+            display: flex; align-items: flex-start; gap: 10px;
+            background: var(--green-dim); border: 1px solid rgba(6,192,21,0.18);
+            border-radius: 8px; padding: 12px 14px; margin-bottom: 1.2rem;
+            font-size: 12.5px; color: #a7f3b4; line-height: 1.55;
+        }
+        .benefit-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+        .gate-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 0.7rem; }
+        .gate-form input {
+            background: var(--navy-mid); border: 1px solid var(--border-md); border-radius: 7px;
+            padding: 10px 12px; font-size: 13.5px; font-family: var(--sans); color: var(--text-pri);
+            outline: none; transition: border-color 0.15s, box-shadow 0.15s; width: 100%;
+        }
+        .gate-form input::placeholder { color: var(--text-dim); }
+        .gate-form input:focus { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-glow); }
+        .gate-submit {
+            background: var(--green); color: #fff; border: none; border-radius: 7px;
+            padding: 11px 16px; font-size: 13.5px; font-weight: 700; font-family: var(--sans);
+            cursor: pointer; width: 100%; transition: background 0.15s; letter-spacing: 0.01em;
+        }
+        .gate-submit:hover { background: #05a813; }
+        .gate-submit:disabled { background: var(--text-dim); cursor: not-allowed; }
+        #gateError { font-size: 12px; color: #f87171; display: none; }
+        .gate-privacy { font-size: 11px; color: var(--text-dim); text-align: center; margin-top: 10px; }
+        .gate-success { display: none; text-align: center; padding: 0.75rem 0; }
+        .success-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .gate-success h3 { font-size: 1.15rem; font-weight: 700; color: var(--green); margin-bottom: 0.4rem; }
+        .gate-success p { font-size: 13px; color: var(--text-sec); line-height: 1.55; }
+
+        /* ABOUT */
+        .about-section { background: var(--navy-mid); border-top: 1px solid var(--border); padding: 2.25rem 1.75rem; }
+        .about-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; max-width: 1200px; margin: 0 auto 1.5rem; }
+        .about-card { background: var(--navy-card); border: 1px solid var(--border); border-radius: 10px; padding: 15px 17px; }
+        .about-card-icon { font-size: 1.2rem; margin-bottom: 7px; }
+        .about-card h3 { font-size: 13px; font-weight: 700; color: var(--text-pri); margin-bottom: 5px; }
+        .about-card p { font-size: 12px; color: var(--text-sec); line-height: 1.65; }
+        .about-card p a { color: var(--green); text-decoration: none; }
+        .about-card p a:hover { text-decoration: underline; }
+        .about-wsda {
+            max-width: 1200px; margin: 0 auto;
+            background: var(--navy-card); border: 1px solid var(--border-md);
+            border-radius: 10px; padding: 20px 22px;
+            display: flex; align-items: flex-start; gap: 18px; flex-wrap: wrap;
+        }
+        .about-wsda-text { flex: 1; min-width: 220px; }
+        .about-wsda-text h3 { font-size: 13px; font-weight: 700; color: var(--text-pri); margin-bottom: 6px; }
+        .about-wsda-text p { font-size: 12px; color: var(--text-sec); line-height: 1.7; }
+        .about-wsda-text p a { color: var(--green); text-decoration: none; }
+        .about-wsda-text p a:hover { text-decoration: underline; }
+        .about-wsda-links { display: flex; flex-direction: column; gap: 7px; flex-shrink: 0; }
+        .wsda-link {
+            font-size: 12px; font-weight: 600; color: var(--text-sec); text-decoration: none;
+            padding: 6px 12px; border: 1px solid var(--border-md); border-radius: 6px;
+            transition: all 0.15s; white-space: nowrap;
+        }
+        .wsda-link:hover { color: var(--green); border-color: rgba(6,192,21,0.3); background: var(--green-dim); }
+
+        /* FOOTER */
+        .ecosystem-footer {
+            background: var(--navy); border-top: 1px solid var(--border);
+            padding: 13px 1.5rem;
+            display: flex; align-items: center; justify-content: center;
+            gap: 6px; font-size: 11px; color: var(--text-dim); flex-wrap: wrap;
+        }
+        .eco-label { font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-right: 8px; }
+        .ecosystem-footer a {
+            color: var(--text-dim); text-decoration: none; padding: 3px 8px;
+            border: 1px solid var(--border); border-radius: 4px; transition: all 0.15s;
+        }
+        .ecosystem-footer a:hover { color: var(--green); border-color: rgba(6,192,21,0.3); background: var(--green-dim); }
+        .eco-sep { color: var(--border-md); }
+
+        @media (max-width: 900px) {
+            .app-shell { grid-template-columns: 1fr; }
+            .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+            .editor-main { height: 60vh; }
+            .feedback-col { border-left: none; border-top: 1px solid var(--border); height: 260px; }
+            .hero-cards { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+    <div class="nav-logo"><a href="https://www.wsdalearning.ai/" target="_blank"><img src="wsda-logo.png" alt="WSDA Learning"></a></div>
+    <div class="nav-cta">
+        <span>Now enrolling: <strong>AI-Enabled Data Analyst</strong></span>
+        <a href="https://www.wsdalearning.ai" target="_blank">Enroll Now →</a>
+    </div>
+</nav>
+
+<!-- CONTEXT BAR -->
+<div class="context-bar">
+    <div class="context-bar-left">
+        <div class="lil-pill">in LinkedIn Learning</div>
+        <div class="context-course">Official companion to <a href="https://www.linkedin.com/learning/sql-essential-training-20685933" target="_blank">SQL Essential Training</a> · 500K+ learners · 4.8 ★</div>
+    </div>
+    <div class="context-bar-links">
+        <a class="ctx-link" href="https://www.linkedin.com/learning/sql-essential-training-20685933" target="_blank">Open Course →</a>
+        <a class="ctx-link sec" href="https://www.linkedin.com/learning/instructors/walter-shields" target="_blank">All Courses</a>
+    </div>
+</div>
+
+<!-- EMAIL GATE -->
+<div id="emailGateOverlay">
+    <div id="emailGateModal">
+        <div id="gateFormContent">
+            <div class="gate-eyebrow">Free SQL practice tool 👋</div>
+            <h2>This editor is free. One thing gets you in — your email.</h2>
+            <p class="gate-sub">Enter your name and email to access the editor and <strong>join Walter's learner community</strong> — 11,000+ data professionals getting better at their craft alongside AI.</p>
+            <div class="gate-benefit">
+                <span class="benefit-icon">🚀</span>
+                <span>You'll also get early access to <strong>PVC Practitioner</strong> — Walter's tool for analysts who want to work with AI without losing accuracy, trust, or their edge.</span>
+            </div>
+            <div class="gate-form">
+                <input type="text" id="gateFirstName" placeholder="First name" autocomplete="given-name">
+                <input type="email" id="gateEmail" placeholder="Work or personal email" autocomplete="email">
+                <div id="gateError">Please enter a valid name and email.</div>
+                <button class="gate-submit" id="gateSubmitBtn" onclick="submitEmailGate()">Get access →</button>
+            </div>
+            <div class="gate-privacy">No spam. Walter reads every reply. Unsubscribe anytime.</div>
+        </div>
+        <div class="gate-success" id="gateSuccessContent">
+            <div class="success-icon">✅</div>
+            <h3>You're in!</h3>
+            <p>Progress saved. Keep querying — the editor is all yours.</p>
+        </div>
+    </div>
+</div>
+
+<!-- APP SHELL -->
+<div class="app-shell" id="appShell">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-label">Database</div>
+            <button id="pixelBtn" class="db-btn active" onclick="loadPixelMetricsDB()">PixelMetrics</button>
+            <button id="digitalBtn" class="db-btn" onclick="loadDigitalEvidenceDB()">Digital Evidence</button>
+            <div class="db-status">Active: <span id="currentDatabase">PixelMetrics</span></div>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-label">Upload Your DB</div>
+            <label class="upload-label" for="dbUpload">📂 Load .sqlite / .db file</label>
+            <input type="file" id="dbUpload" accept=".sqlite,.db" onchange="loadDatabase(event)">
+        </div>
+        <div class="schema-scroll">
+            <div class="sidebar-label">Schema Explorer</div>
+            <div id="schemaSidebar"><span style="color:var(--text-dim);font-size:12px;font-style:italic;">Loading…</span></div>
+        </div>
+    </aside>
+
+    <!-- EDITOR + RESULTS SPLIT PANE -->
+    <main class="editor-main" id="editorMain">
+        <div class="editor-toolbar">
+            <div class="toolbar-left">
+                <span class="toolbar-label">SQL Editor</span>
+                <button class="btn btn-primary" onclick="runQuery()">▶ Run</button>
+                <button class="btn btn-ghost" onclick="reviewQuery()">✦ Review</button>
+                <button class="btn btn-ghost" onclick="exportQuery()">↓ Query</button>
+                <button class="btn btn-ghost" onclick="exportResults()">↓ Results</button>
+            </div>
+            <span class="toolbar-hint">Drag the divider to resize · Ctrl+Enter to run</span>
+        </div>
+
+        <div class="split-container" id="splitContainer">
+            <div class="editor-pane" id="editorPane">
+                <textarea id="editor"></textarea>
+            </div>
+            <div class="drag-handle" id="dragHandle" title="Drag to resize editor / results"></div>
+            <div class="result-pane" id="resultPane">
+                <div class="result-bar">
+                    <span>Output</span>
+                    <span id="rowCount"></span>
+                </div>
+                <div class="result-content" id="resultArea">
+                    <span class="result-empty">Run a query to see results here.</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FEEDBACK COLUMN -->
+    <aside class="feedback-col">
+        <div class="feedback-header">
+            <span class="feedback-title">Walter AI Feedback</span>
+            <span class="ai-badge">Live</span>
+        </div>
+        <div class="feedback-body" id="feedbackPanel">
+            <span class="feedback-empty">Write a query and click <strong style="color:var(--text-sec)">Review</strong> to get AI feedback — correctness, style, and one improvement tip.</span>
+        </div>
+        <div class="feedback-footer">
+            <div class="pvc-callout">
+                <div class="pvc-callout-label">PVC Practitioner</div>
+                <p>Connect your own database, validate AI-generated queries, and communicate findings to stakeholders.</p>
+                <a href="https://pvc.wsdalearning.ai" target="_blank">Try PVC Practitioner →</a>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<!-- ABOUT SECTION -->
+<div class="about-section">
+    <div class="about-grid">
+        <div class="about-card">
+            <div class="about-card-icon">📖</div>
+            <h3>How to use this tool</h3>
+            <p>Choose a database from the sidebar, write SQL in the editor, and click <strong>Run</strong> to see results. Click <strong>Review</strong> to get AI feedback. Drag the divider between editor and results to reshape your workspace. Export your query or results anytime using the toolbar buttons.</p>
+        </div>
+        <div class="about-card">
+            <div class="about-card-icon">🗄️</div>
+            <h3>The PixelMetrics database</h3>
+            <p>PixelMetrics is the fictional SaaS company at the center of Walter's LinkedIn Learning course. It includes four tables — customers, orders, products, and regions — with ~1,200 rows of realistic data built to cover every chapter. Practice directly against the queries from the course.</p>
+        </div>
+        <div class="about-card">
+            <div class="about-card-icon">🔬</div>
+            <h3>Digital Evidence database</h3>
+            <p>A forensic SQL database for analysts who want to push beyond the basics. Complex joins, subqueries, and aggregations drawn from investigative scenarios. Use it when you're ready to stress-test your SQL reasoning against real-world complexity.</p>
+        </div>
+        <div class="about-card">
+            <div class="about-card-icon">🤖</div>
+            <h3>Walter AI feedback</h3>
+            <p>The Review button sends your query and the full database schema to Walter AI, which returns personalized feedback: is the query correct, is the style clean, and what's the one thing to improve? Built to accelerate learning without replacing the thinking.</p>
+        </div>
+    </div>
+
+    <div class="about-wsda">
+        <div class="about-wsda-text">
+            <h3>About WSDA Learning</h3>
+            <p>
+                Walter Shields is a data analytics educator, best-selling author, and LinkedIn Learning instructor with over <strong style="color:var(--text-pri)">500,000 learners</strong> across his courses — including <a href="https://www.linkedin.com/learning/data-analysis-investigate-with-sql" target="_blank">Data Analysis: Investigate with SQL</a> and <a href="https://www.linkedin.com/learning/instructors/walter-shields" target="_blank">SQL Essential Training</a>, both rated 4.8 stars.
+                <br><br>
+                WSDA Learning is his independent platform — home to courses, tools, and the daily <a href="https://www.linkedin.com/newsletters/wsda-news-6993925074810462208" target="_blank">WSDA News newsletter</a> read by 11,000+ data professionals. This SQL Editor is one of three free AI-powered tools built to help analysts get better at their craft. The others: <a href="https://pvc.wsdalearning.ai" target="_blank">PVC Practitioner</a> for validating AI-generated analysis, and the AI-Enabled Data Analyst learning pathway at <a href="https://wsdalearning.ai" target="_blank">wsdalearning.ai</a>.
+            </p>
+        </div>
+        <div class="about-wsda-links">
+            <a class="wsda-link" href="https://www.linkedin.com/learning/instructors/walter-shields" target="_blank">📚 All LinkedIn Learning Courses</a>
+            <a class="wsda-link" href="https://www.wsdalearning.ai" target="_blank">🎓 WSDA Learning Platform</a>
+            <a class="wsda-link" href="https://www.linkedin.com/newsletters/wsda-news-6993925074810462208" target="_blank">📰 WSDA News Newsletter</a>
+            <a class="wsda-link" href="https://pvc.wsdalearning.ai" target="_blank">🚀 PVC Practitioner</a>
+        </div>
+    </div>
+</div>
+
+<!-- ECOSYSTEM FOOTER -->
+<footer class="ecosystem-footer">
+    <span class="eco-label">WSDA Ecosystem</span>
+    <a href="https://wsdalearning.ai" target="_blank">wsdalearning.ai</a>
+    <span class="eco-sep">·</span>
+    <a href="https://sqleditor.wsdalearning.ai" target="_blank">SQL Editor</a>
+    <span class="eco-sep">·</span>
+    <a href="https://pvc.wsdalearning.ai" target="_blank">PVC Practitioner</a>
+    <span class="eco-sep">·</span>
+    <a href="https://www.linkedin.com/newsletters/wsda-news-6993925074810462208" target="_blank">WSDA News</a>
+</footer>
+
+<script>
+const KLAVIYO_PUBLIC_KEY = 'Xq8cpH';
+const KLAVIYO_LIST_ID    = 'RxbHkP';
+
+let db, editor, SQL;
+let queryRunCount = parseInt(sessionStorage.getItem('wsda_query_count') || '0');
+let gateShown = false;
+
+window.onload = async function() {
+    SQL = await initSqlJs({ locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${f}` });
+    const res = await fetch('pixelmetrics.db');
+    const buf = await res.arrayBuffer();
+    db = new SQL.Database(new Uint8Array(buf));
+
+    editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+        mode: 'text/x-sql', theme: 'default', lineNumbers: true,
+        viewportMargin: Infinity, lineWrapping: false,
+        extraKeys: { 'Ctrl-Enter': runQuery, 'Cmd-Enter': runQuery }
+    });
+
+    // Set app shell height dynamically
+    function setShellHeight() {
+        const nav = document.querySelector('.nav').offsetHeight;
+        const bar = document.querySelector('.context-bar').offsetHeight;
+        const h   = Math.max(400, window.innerHeight - nav - bar);
+        document.getElementById('appShell').style.height = h + 'px';
+    }
+    setShellHeight();
+    window.addEventListener('resize', setShellHeight);
+
+    initSplitPane();
+    updateDatabaseButtons('pixel');
+    refreshSchema();
+    if (shouldShowGate()) setTimeout(showEmailGate, 800);
+};
+
+// SPLIT PANE
+function initSplitPane() {
+    const container  = document.getElementById('splitContainer');
+    const editorPane = document.getElementById('editorPane');
+    const resultPane = document.getElementById('resultPane');
+    const handle     = document.getElementById('dragHandle');
+    let editorRatio  = 0.58;
+
+    function applyRatio() {
+        const total = container.clientHeight - handle.offsetHeight;
+        const epH   = Math.max(80, Math.min(total - 60, Math.round(total * editorRatio)));
+        editorPane.style.height = epH + 'px';
+        resultPane.style.height = (total - epH) + 'px';
+        if (editor) { editor.setSize('100%', epH); editor.refresh(); }
+    }
+    applyRatio();
+    new ResizeObserver(applyRatio).observe(container);
+
+    let dragging = false, startY = 0, startH = 0;
+    handle.addEventListener('mousedown', e => {
+        dragging = true; startY = e.clientY; startH = editorPane.clientHeight;
+        handle.classList.add('dragging');
+        document.body.style.cssText += 'cursor:ns-resize;user-select:none;';
+    });
+    document.addEventListener('mousemove', e => {
+        if (!dragging) return;
+        const total = container.clientHeight - handle.offsetHeight;
+        editorRatio = Math.max(80, Math.min(total - 60, startH + e.clientY - startY)) / total;
+        applyRatio();
+    });
+    document.addEventListener('mouseup', () => {
+        if (!dragging) return;
+        dragging = false; handle.classList.remove('dragging');
+        document.body.style.cursor = ''; document.body.style.userSelect = '';
+    });
+    handle.addEventListener('touchstart', e => { dragging = true; startY = e.touches[0].clientY; startH = editorPane.clientHeight; }, { passive: true });
+    document.addEventListener('touchmove', e => {
+        if (!dragging) return;
+        const total = container.clientHeight - handle.offsetHeight;
+        editorRatio = Math.max(80, Math.min(total - 60, startH + e.touches[0].clientY - startY)) / total;
+        applyRatio();
+    }, { passive: true });
+    document.addEventListener('touchend', () => { dragging = false; });
+}
+
+// GATE
+function shouldShowGate() { return localStorage.getItem('wsda_email_captured') !== 'true' && !gateShown; }
+function showEmailGate() {
+    if (!shouldShowGate()) return;
+    gateShown = true;
+    document.getElementById('emailGateOverlay').classList.add('active');
+    setTimeout(() => document.getElementById('gateFirstName').focus(), 300);
+}
+
+async function submitEmailGate() {
+    const firstName = document.getElementById('gateFirstName').value.trim();
+    const email     = document.getElementById('gateEmail').value.trim();
+    const errorEl   = document.getElementById('gateError');
+    const btn       = document.getElementById('gateSubmitBtn');
+    if (!firstName || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errorEl.style.display = 'block'; return; }
+    errorEl.style.display = 'none'; btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+        const r = await fetch(`https://a.klaviyo.com/client/subscriptions/?company_id=${KLAVIYO_PUBLIC_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'revision': '2024-10-15' },
+            body: JSON.stringify({ data: { type: 'subscription', attributes: { custom_source: 'WSDA SQL Editor', profile: { data: { type: 'profile', attributes: { email, first_name: firstName, properties: { tool_name: 'AI SQL Editor', tool_direct_url: 'https://sqleditor.wsdalearning.ai/', tool_explanation_url: 'https://sqleditor.wsdalearning.ai/how-to-use' } } } } }, relationships: { list: { data: { type: 'list', id: KLAVIYO_LIST_ID } } } } })
+        });
+        if (r.status === 202 || r.ok) { localStorage.setItem('wsda_email_captured', 'true'); localStorage.setItem('wsda_subscriber_name', firstName); showGateSuccess(firstName); }
+        else throw new Error('Klaviyo ' + r.status);
+    } catch(e) { console.error(e); localStorage.setItem('wsda_email_captured', 'true'); showGateSuccess(firstName); }
+}
+function showGateSuccess(n) {
+    document.getElementById('gateFormContent').style.display = 'none';
+    const s = document.getElementById('gateSuccessContent'); s.style.display = 'block';
+    if (n) s.querySelector('h3').textContent = `You're in, ${n}!`;
+    setTimeout(() => document.getElementById('emailGateOverlay').classList.remove('active'), 2500);
+}
+
+// QUERY
+function runQuery() {
+    const selection = editor.getSelection().trim();
+    const q = selection || editor.getValue().trim();
+    if (!q) return;
+    try {
+        const r = db.exec(q);
+        if (r.length > 0) {
+            const last = r[r.length - 1]; // SQLite native: last statement wins
+            const rows = last.values.length;
+            document.getElementById('resultArea').innerHTML = generateTableHtml(last);
+            document.getElementById('rowCount').textContent = rows + ' row' + (rows !== 1 ? 's' : '');
+            initColumnResize();
+        } else {
+            document.getElementById('resultArea').innerHTML = '<span class="result-empty">Query ran — no rows returned.</span>';
+            document.getElementById('rowCount').textContent = '';
+        }
+    } catch(e) {
+        document.getElementById('resultArea').innerHTML = `<span class="result-error">Error: ${e.message}</span>`;
+        document.getElementById('rowCount').textContent = '';
+    }
+    refreshSchema(); queryRunCount++;
+    sessionStorage.setItem('wsda_query_count', queryRunCount);
+}
+function generateTableHtml(r) {
+    const colWidth = 140;
+    let h = '<table class="result-table" style="width:max-content;min-width:100%;"><thead><tr>';
+    h += r.columns.map(c => `<th style="width:${colWidth}px;position:relative;">${c}<div class="col-resizer"></div></th>`).join('');
+    h += '</tr></thead><tbody>';
+    r.values.forEach(row => { h += '<tr>' + row.map(v => `<td>${v === null ? '<span style="color:var(--text-dim);font-style:italic">NULL</span>' : v}</td>`).join('') + '</tr>'; });
+    h += '</tbody></table>';
+    return h;
+}
+
+function initColumnResize() {
+    const table = document.querySelector('.result-table');
+    if (!table) return;
+    table.querySelectorAll('.col-resizer').forEach(handle => {
+        let startX, startW, th;
+        handle.addEventListener('mousedown', e => {
+            th = handle.parentElement;
+            startX = e.pageX;
+            startW = th.offsetWidth;
+            handle.classList.add('resizing');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+
+            const onMove = e => { th.style.width = Math.max(60, startW + e.pageX - startX) + 'px'; };
+            const onUp   = () => {
+                handle.classList.remove('resizing');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+            };
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+            e.preventDefault();
+        });
+    });
+}
+
+// SCHEMA
+function refreshSchema() {
+    try {
+        const r = db.exec("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name");
+        if (!r.length) { document.getElementById('schemaSidebar').innerHTML = '<span style="color:var(--text-dim);font-size:12px;">No tables.</span>'; return; }
+        document.getElementById('schemaSidebar').innerHTML = r[0].values.map(([n]) =>
+            `<div class="table-entry"><div class="table-toggle" onclick="toggleTable('${n}')"><span id="caret-${n}" class="caret">▶</span> ${n}</div><div id="cols-${n}" class="column-list" style="display:none;"></div></div>`
+        ).join('');
+    } catch(e) { document.getElementById('schemaSidebar').innerHTML = '<span style="color:var(--text-dim);font-size:12px;">Error.</span>'; }
+}
+function toggleTable(n) {
+    const d = document.getElementById('cols-' + n), c = document.getElementById('caret-' + n);
+    if (d.style.display === 'none') {
+        const r = db.exec(`PRAGMA table_info(${n});`);
+        if (r.length) d.innerHTML = r[0].values.map(col => `<div class="column-item">↳ ${col[1]}<span class="col-type"> ${col[2]}</span></div>`).join('');
+        d.style.display = 'block'; c.textContent = '▼';
+    } else { d.style.display = 'none'; c.textContent = '▶'; }
+}
+
+// DB LOADERS
+function loadDatabase(event) {
+    const f = event.target.files[0]; if (!f) return;
+    const reader = new FileReader();
+    reader.onload = async e => {
+        try { db = new SQL.Database(new Uint8Array(e.target.result)); refreshSchema(); document.getElementById('resultArea').innerHTML = '<span class="result-empty">Database loaded.</span>'; editor.setValue(''); }
+        catch { alert('Invalid SQLite file.'); }
+    };
+    reader.readAsArrayBuffer(f);
+}
+async function loadPixelMetricsDB() {
+    db = new SQL.Database(new Uint8Array(await (await fetch('pixelmetrics.db')).arrayBuffer()));
+    document.getElementById('currentDatabase').textContent = 'PixelMetrics';
+    updateDatabaseButtons('pixel'); refreshSchema();
+    document.getElementById('resultArea').innerHTML = '<span class="result-empty">PixelMetrics loaded.</span>'; editor.setValue('');
+}
+async function loadDigitalEvidenceDB() {
+    db = new SQL.Database(new Uint8Array(await (await fetch('DigitalEvidenceDB_25.db')).arrayBuffer()));
+    document.getElementById('currentDatabase').textContent = 'Digital Evidence';
+    updateDatabaseButtons('digital'); refreshSchema();
+    document.getElementById('resultArea').innerHTML = '<span class="result-empty">Digital Evidence loaded.</span>'; editor.setValue('');
+}
+function updateDatabaseButtons(a) {
+    document.getElementById('pixelBtn').className   = 'db-btn' + (a === 'pixel'   ? ' active' : '');
+    document.getElementById('digitalBtn').className = 'db-btn' + (a === 'digital' ? ' active' : '');
+}
+
+// EXPORT
+function exportQuery() { const q = (editor.getSelection().trim() || editor.getValue().trim()); if (!q) { alert('No query.'); return; } dlBlob(q, 'query.sql', 'text/plain'); }
+function exportResults() {
+    const t = document.querySelector('.result-table'); if (!t) { alert('No results.'); return; }
+    let csv = ''; t.querySelectorAll('tr').forEach(r => { csv += Array.from(r.querySelectorAll('th,td')).map(c => `"${c.textContent.replace(/"/g,'""')}"`).join(',') + '\n'; });
+    dlBlob(csv, 'results.csv', 'text/csv');
+}
+function dlBlob(content, name, type) { Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([content], { type })), download: name }).click(); }
+
+// AI REVIEW
+async function reviewQuery() {
+    const q = editor.getValue().trim(), panel = document.getElementById('feedbackPanel');
+    if (!q) { panel.innerHTML = '<span style="color:#f87171;font-size:12.5px;">⚠ Write a query first.</span>'; return; }
+    panel.innerHTML = `<div style="display:flex;align-items:center;gap:8px;color:var(--text-sec);font-size:12.5px;"><div class="spinner"></div> Reviewing your SQL…</div>`;
+    let schema = '';
+    try { const r = db.exec("SELECT name, sql FROM sqlite_master WHERE type IN ('table','view') ORDER BY name;"); if (r.length) r[0].values.forEach(([n,s]) => { schema += `\nTable: ${n}\n${s}`; }); } catch(e) { schema = '(unavailable)'; }
+    try {
+        const res = await fetch('https://wsdalearning-sqleditor-proxy.walterashields.workers.dev/sqleditor/v1/chat/completions', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: 'gpt-3.5-turbo', messages: [
+                { role: 'system', content: 'You are Walter, a seasoned SQL instructor. Review the learner\'s query honestly and specifically — respond to exactly what they wrote, not a generic checklist. If the query is correct and well-written, say so clearly and briefly — do not invent improvements. If there is a real issue (wrong syntax, logic error, inefficiency, missing clause), explain it plainly and show how to fix it. If there is one genuinely useful tip that applies to this specific query, share it — otherwise skip it. Never suggest adding comments, aliases, or semicolons unless they are directly relevant to a real problem in the query. Tone: direct, warm, never padded. Under 120 words. Plain text only, no bullet points or headers.' },
+                { role: 'user', content: `Schema:\n${schema}\n\nQuery:\n${q}\n\nPlease review.` }
+            ], temperature: 0.4 })
+        });
+        const data = await res.json();
+        panel.innerHTML = `<div class="feedback-text">${data.choices[0].message.content.trim().replace(/\n/g,'<br>')}</div>`;
+    } catch(e) { panel.innerHTML = '<span style="color:#f87171;font-size:12.5px;">❌ Review failed. Try again.</span>'; }
+}
+</script>
+</body>
+</html>
